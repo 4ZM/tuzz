@@ -30,38 +30,22 @@ const std::string read_file(const char* fn) {
   return std::string((sbuf_it_t(fs)), sbuf_it_t());
 }
 
-using cstr_it = std::string::const_iterator;
-
-std::vector<cstr_it> find_sep(cstr_it first, cstr_it end,
-															std::initializer_list<char> sep) {
-  std::vector<cstr_it> sep_iters;
-
-  for (auto it = first; it != end;) {
-    it = find_if(it, end,
-      [&] (char c) { return std::find(sep.begin(), sep.end(), c) != sep.end(); }
-		);
-
-    if (it != end)
-      sep_iters.push_back(it++);
-  }
-
-  return sep_iters;
-}
-
 template<typename InIt, typename OutIt>
 std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
   using namespace tuzz;
 
   return {
-		make_rep_n_finjector<InIt, OutIt>(3, position::begining),
-		make_rep_n_finjector<InIt, OutIt>(3, position::end),
-		make_rep_n_finjector<InIt, OutIt>
-			(3,	position::begining | position::middle | position::end),
-		make_rep_n_char_finjector<InIt, OutIt>(3, '|', position::end, false),
-		make_transform_finjector<InIt, OutIt>(::toupper),
-		make_transform_finjector<InIt, OutIt>(::tolower),
+    make_rep_n_finjector<InIt, OutIt>(1, position::begining),
+    make_rep_n_finjector<InIt, OutIt>(5, position::end),
+    make_rep_n_finjector<InIt, OutIt>
+      (3, position::begining | position::middle | position::end),
+    make_rep_n_char_finjector<InIt, OutIt>(1, '|', position::end, false),
+    make_transform_finjector<InIt, OutIt>(::toupper),
+    make_transform_finjector<InIt, OutIt>(::tolower),
   };
 }
+
+
 
 
 int main(int argc, char* argv[]) {
@@ -77,11 +61,12 @@ int main(int argc, char* argv[]) {
 
   // Find chunks
   auto sep_iters =
-    find_sep(str.cbegin(), str.cend(),
+    find_sep<initializer_list<char>>(str.cbegin(), str.cend(),
              { ',', ';', ':', '/', '(', ')', '-', '\n' });
 
   // Cretate the fault injectors to use
-  auto finjectors = make_finjectors<cstr_it, ostream_iterator<char>>();
+  auto finjectors = make_finjectors<std::string::const_iterator,
+                                    back_insert_iterator<string>>();
 
   cout << endl;
   cout << "Found: " << sep_iters.size() << " separators" << endl;
@@ -93,13 +78,11 @@ int main(int argc, char* argv[]) {
   size_t variant = 0;
   for (auto finjector : finjectors) {
     printf("------------- file %04d -----------------\n", variant);
-    auto str_it = str.cbegin();
-    for (auto part_it : sep_iters) {
-      finjector(str_it, part_it, osit);
-      *osit = *part_it;
-      ++osit;
-      str_it = part_it + 1;
-    }
+    string out_str;
+    apply_finjector(str.cbegin(), str.cend(),
+                    back_inserter(out_str),
+                    sep_iters, finjector);
+    copy(out_str.cbegin(), out_str.cend(), osit);
     cout << "-----------------------------------------" << endl;
 
     ++variant;

@@ -28,5 +28,4 @@ clean:
 	rm -f tuzz *~
 
 tuzz: tuzz.cpp tuzz.hpp
-	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS} 
-
+	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
