@@ -65,17 +65,43 @@ namespace tuzz {
   template <typename InIt, typename OutIt>
   OutIt rep_n(InIt first, InIt last, OutIt out, size_t n, position::type pos) {
     if (first == last) return out;
-    return impl::rep_n_<InIt, OutIt>(first, last, out, n, pos, [] (InIt i) { return *i; });
+    return impl::rep_n_<InIt, OutIt>(first, last, out, n, pos,
+																		 [] (InIt i) { return *i; });
   }
 
   template <typename InIt, typename OutIt>
-  OutIt rep_n(InIt first, InIt last, OutIt out, size_t n, position::type pos, char c, bool between_empty) {
+  OutIt rep_n(InIt first, InIt last, OutIt out,
+							size_t n, position::type pos, char c, bool between_empty) {
     if (first == last && !between_empty) return out;
 
     std::function<char(InIt)> f = [=] (InIt i) { return c; };
     return impl::rep_n_(first, last, out, n, pos, f);
   }
 
+
+	template<typename InIt, typename OutIt, typename Fn>
+	tuzz::finjector_t<InIt, OutIt> make_transform_finjector(Fn f) {
+		return [=] (InIt begin, InIt end, OutIt out) {
+			return transform(begin, end, out, f);
+		};
+	}
+
+	template<typename InIt, typename OutIt>
+	tuzz::finjector_t<InIt, OutIt>
+	make_rep_n_finjector(size_t n, tuzz::position_t pos) {
+		return [=] (InIt begin, InIt end, OutIt out) {
+			return tuzz::rep_n(begin, end, out, n, pos);
+		};
+	}
+
+	template<typename InIt, typename OutIt>
+	tuzz::finjector_t<InIt, OutIt>
+	make_rep_n_char_finjector(size_t n, char c, tuzz::position_t pos,
+														bool between_empty = false) {
+		return [=] (InIt begin, InIt end, OutIt out) {
+			return tuzz::rep_n(begin, end, out, n, pos, c, between_empty);
+		};
+	}
 
 }
 

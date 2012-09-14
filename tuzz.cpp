@@ -32,7 +32,8 @@ const std::string read_file(const char* fn) {
 
 using cstr_it = std::string::const_iterator;
 
-std::vector<cstr_it> find_sep(cstr_it first, cstr_it end, std::initializer_list<char> sep) {
+std::vector<cstr_it> find_sep(cstr_it first, cstr_it end,
+															std::initializer_list<char> sep) {
   std::vector<cstr_it> sep_iters;
 
   for (auto it = first; it != end;) {
@@ -52,25 +53,13 @@ std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
   using namespace tuzz;
 
   return {
-    [] (InIt begin, InIt end, OutIt out) {
-      return rep_n(begin, end, out, 3, position::begining);
-    },
-    [] (InIt begin, InIt end, OutIt out) {
-      return rep_n(begin, end, out, 3, position::end);
-    },
-    [] (InIt begin, InIt end, OutIt out) {
-      return rep_n(begin, end, out, 1,
-        position::begining | position::middle | position::end);
-    },
-    [] (InIt begin, InIt end, OutIt out) {
-      return rep_n(begin, end, out, 2, position::middle, '|', false);
-    },
-    [] (InIt begin, InIt end, OutIt out) {
-      return transform(begin, end, out, ::toupper);
-    },
-    [] (InIt begin, InIt end, OutIt out) {
-      return transform(begin, end, out, ::tolower);
-    },
+		make_rep_n_finjector<InIt, OutIt>(3, position::begining),
+		make_rep_n_finjector<InIt, OutIt>(3, position::end),
+		make_rep_n_finjector<InIt, OutIt>
+			(3,	position::begining | position::middle | position::end),
+		make_rep_n_char_finjector<InIt, OutIt>(3, '|', position::end, false),
+		make_transform_finjector<InIt, OutIt>(::toupper),
+		make_transform_finjector<InIt, OutIt>(::tolower),
   };
 }
 
