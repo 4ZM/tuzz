@@ -22,7 +22,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <iterator>
+
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 const std::string read_file(const char* fn) {
   using sbuf_it_t = std::istreambuf_iterator<char>;
@@ -49,44 +53,89 @@ std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
 
 
 int main(int argc, char* argv[]) {
-  using namespace std;
   using namespace tuzz;
+  namespace fs = boost::filesystem;
+  using namespace std;
+
+  if (argc < 3) {
+    cout << "Usage: tuzz src_path dst_path" << endl;
+    return 1;
+  }
+
+  fs::path src_path(argv[1]);
+  fs::path dst_path(argv[2]);
+
+  try {
+    if (!fs::exists(src_path) || !fs::is_regular_file(src_path)) {
+      cout << "No such file: " << src_path << endl;
+      return 1;
+    }
+
+    if (fs::exists(dst_path)) {
+      if (!fs::is_directory(dst_path)) {
+        cout << "Destination " << dst_path << " is not a directory: " << endl;
+        return 1;
+      }
+      else if (!fs::is_empty(dst_path)) {
+        cout << "Destination directory " << dst_path << " exists and is not empty." << endl;
+        return 1;
+      }
+    }
+    else if (!fs::create_directory(dst_path)) {
+      cout << "Failed to create dst: "  << dst_path << endl;
+      return 1;
+    }
+  }
+  catch (const fs::filesystem_error& ex) {
+    cout << ex.what() << endl;
+    return 1;
+  }
+
+  cout << "[+] Reading input file: " << src_path <<
+    " (" << fs::file_size(src_path) << " Bytes)" << endl;
 
   // Load a pristine text file
-  const string str = read_file(argv[1]);
-
-  cout << "------------- original file -------------" << endl;
-  cout << str << endl;
-  cout << "-----------------------------------------" << endl;
+  fs::ifstream ifs(src_path);
+  using sbuf_it_t = std::istreambuf_iterator<char>;
+  const string str = std::string((sbuf_it_t(ifs)), sbuf_it_t());
 
   // Find chunks
   auto sep_iters =
     find_sep<initializer_list<char>>(str.cbegin(), str.cend(),
              { ',', ';', ':', '/', '(', ')', '-', '\n' });
 
+  cout << "    Found " << sep_iters.size() << " separators" << endl;
+
   // Cretate the fault injectors to use
   auto finjectors = make_finjectors<std::string::const_iterator,
                                     back_insert_iterator<string>>();
 
-  cout << endl;
-  cout << "Found: " << sep_iters.size() << " separators" << endl;
-  cout << "Loaded: " << finjectors.size() << " finjectors" << endl;
-  cout << endl;
+  cout << "[+] Loaded " << finjectors.size() << " fault injectors" << endl;
 
-  // Run each fault injector over every chunk
-  auto osit = ostream_iterator<char>(cout);
+  cout << "[+] Generating faulty files in " << dst_path << endl;
+
   size_t variant = 0;
   for (auto finjector : finjectors) {
-    printf("------------- file %04d -----------------\n", variant);
+    ostringstream fn;
+    fn << src_path.stem().generic_string()
+       << "_"
+       << std::to_string(variant)
+       << src_path.extension().generic_string();
+
+    fs::ofstream ofs(fs::path(dst_path / fn.str()));
+    auto osbuf_it = std::ostreambuf_iterator<char>(ofs);
+
     string out_str;
     apply_finjector(str.cbegin(), str.cend(),
                     back_inserter(out_str),
                     sep_iters, finjector);
-    copy(out_str.cbegin(), out_str.cend(), osit);
-    cout << "-----------------------------------------" << endl;
+
+    copy(out_str.cbegin(), out_str.cend(), osbuf_it);
 
     ++variant;
   }
+
+  cout << "[+] Generation completed." << endl;
 
   return 0;
 }
