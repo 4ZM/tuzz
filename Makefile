@@ -17,7 +17,7 @@
 
 GCC        = gcc
 CFLAGS     = -g -Wall -std=c++11
-LDFLAGS    = -lstdc++ -lboost_filesystem
+LDFLAGS    = -lstdc++ -lboost_filesystem -lboost_program_options
 
 .PHONY: clean all
 
