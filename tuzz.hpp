@@ -135,9 +135,7 @@ namespace tuzz {
                         finjector_t<InIt, OutIt> f) {
     auto str_it = begin;
     for (auto part_it : sep_iters) {
-      std::string out_str;
-      f(str_it, part_it, back_inserter(out_str));
-      copy(out_str.cbegin(), out_str.cend(), out);
+      f(str_it, part_it, out);
       *out = *part_it;
       ++out;
       str_it = part_it + 1;

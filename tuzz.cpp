@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
   // Cretate the fault injectors to use
   auto finjectors = make_finjectors<std::string::const_iterator,
-                                    back_insert_iterator<string>>();
+                                    std::ostreambuf_iterator<char>>();
 
   cout << "[+] Loaded " << finjectors.size() << " fault injectors" << endl;
 
@@ -125,12 +125,9 @@ int main(int argc, char* argv[]) {
     fs::ofstream ofs(fs::path(dst_path / fn.str()));
     auto osbuf_it = std::ostreambuf_iterator<char>(ofs);
 
-    string out_str;
     apply_finjector(str.cbegin(), str.cend(),
-                    back_inserter(out_str),
+                    osbuf_it,
                     sep_iters, finjector);
-
-    copy(out_str.cbegin(), out_str.cend(), osbuf_it);
 
     ++variant;
   }
