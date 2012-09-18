@@ -18,6 +18,7 @@
  */
 
 #include "tuzz.hpp"
+#include "options.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -29,12 +30,6 @@
 #include <boost/filesystem/fstream.hpp>
 
 #include <boost/program_options.hpp>
-
-const std::string read_file(const char* fn) {
-  using sbuf_it_t = std::istreambuf_iterator<char>;
-  std::ifstream fs(fn);
-  return std::string((sbuf_it_t(fs)), sbuf_it_t());
-}
 
 template<typename InIt, typename OutIt>
 std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
@@ -51,68 +46,26 @@ std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
   };
 }
 
-
-
-
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
   using namespace tuzz;
   namespace fs = boost::filesystem;
   namespace po = boost::program_options;
   using namespace std;
 
-  po::options_description generic("Allowed options");
-  generic.add_options()
-    ("help,h", "produce help message")
-    ("version,v", "print version string")
-    ("output,o", po::value<string>()->default_value("-"), "output file pattern (%n)")
-    ;
+  tuzz_options opt(argc, argv);
 
-  po::options_description hidden("Hidden options");
-  hidden.add_options()
-    ("input,i", po::value< vector<string> >(), "input file(s)")
-    ;
-
-  po::positional_options_description p;
-  p.add("input", -1);
-
-  po::options_description cmdline_options;
-  cmdline_options.add(generic).add(hidden);
-
-  po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).
-            options(cmdline_options).positional(p).run(), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    cout << generic << endl;
+  if (opt.stdin_as_input() || opt.stdout_as_output())
+  {
+    cout << "-o- and -i- is not yet supported" << endl;
+    return 1;
+  }
+  else if (opt.get_input_paths().size() > 1) {
+    cout << "multiple inputs not yet supported" << endl;
     return 1;
   }
 
-  if (vm.count("version")) {
-    cout << "tuzz - the text fuzzer - v0.0.1" << endl;
-    cout << "Copyright (C) 2012 Anders Sundman <anders@4zm.org>" << endl;
-    cout << "This is free software: you are free to change and redistribute it." << endl;
-    cout << "There is NO WARRANTY, to the extent permitted by law." << endl;
-  }
-
-  if (vm.count("input"))
-  {
-    vector<string> inputs = vm["input"].as<vector<string>>();
-      for(auto i : inputs)
-        cout << "Input files are: " << i << endl;
-  }
-
-  if (vm.count("output")){
-    cout << "output: " << vm["output"].as<string>() << endl;
-
-    if (vm["output"].as<string>() == "-") {
-      cout << "-o- is not yet supported" << endl;
-      return 1;
-    }
-  }
-
-  fs::path src_path(vm["input"].as<vector<string>>()[0]);
-  fs::path dst_path(vm["output"].as<string>());
+  fs::path src_path(opt.get_input_paths()[0]);
+  fs::path dst_path(opt.get_output_pattern());
 
   try {
     if (!fs::exists(src_path) || !fs::is_regular_file(src_path)) {

@@ -19,6 +19,12 @@ GCC        = gcc
 CFLAGS     = -g -Wall -std=c++11
 LDFLAGS    = -lstdc++ -lboost_filesystem -lboost_program_options
 
+TUZZ_SRCS  =    \
+  tuzz.cpp      \
+  options.cpp
+
+TUZZ_OBJS = $(TUZZ_SRCS:.c=.o)
+
 .PHONY: clean all
 
 all: tuzz
@@ -26,5 +32,24 @@ all: tuzz
 clean:
 	rm -f tuzz *~
 
-tuzz: tuzz.cpp tuzz.hpp
+tuzz: ${TUZZ_OBJS}
 	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
+
+# Generic compilation rule - make file plumbing
+%.o : %.c Makefile
+	${CC} ${CFLAGS} -c $<
+
+# makedepend section - set up include dependencies
+DEPFILE		= .depends
+DEPTOKEN	= '\# MAKEDEPENDS'
+DEPFLAGS	= -Y -f $(DEPFILE) -s $(DEPTOKEN)
+
+depend:
+	rm -f $(DEPFILE)
+	make $(DEPFILE)
+
+$(DEPFILE):
+	@echo $(DEPTOKEN) > $(DEPFILE)
+	makedepend $(DEPFLAGS) -- $(CFLAGS) -- *.c 2> /dev/null
+
+sinclude $(DEPFILE)
