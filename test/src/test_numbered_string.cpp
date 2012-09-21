@@ -23,34 +23,34 @@ TEST_CASE( "tuzz/utility/numbered_string/ctor", "Construction" ) {
 TEST_CASE( "tuzz/utility/numbered_string/str", "String creation" ) {
 	{
 		tuzz::numbered_string ns("%2n");
-		REQUIRE( ns.str(0) == "00" );
-		REQUIRE( ns.str(1) == "01" );
-		REQUIRE( ns.str(12) == "12" );
-		REQUIRE( ns.str(123) == "123" );
+		CHECK( ns.str(0) == "00" );
+		CHECK( ns.str(1) == "01" );
+		CHECK( ns.str(12) == "12" );
+		CHECK( ns.str(123) == "123" );
 	}
 
 	{
 		tuzz::numbered_string ns("fu%2n");
-		REQUIRE( ns.str(0) == "fu00" );
-		REQUIRE( ns.str(1) == "fu01" );
-		REQUIRE( ns.str(12) == "fu12" );
-		REQUIRE( ns.str(123) == "fu123" );
+		CHECK( ns.str(0) == "fu00" );
+		CHECK( ns.str(1) == "fu01" );
+		CHECK( ns.str(12) == "fu12" );
+		CHECK( ns.str(123) == "fu123" );
 	}
 
 	{
 		tuzz::numbered_string ns("%2nbar");
-		REQUIRE( ns.str(0) == "00bar" );
-		REQUIRE( ns.str(1) == "01bar" );
-		REQUIRE( ns.str(12) == "12bar" );
-		REQUIRE( ns.str(123) == "123bar" );
+		CHECK( ns.str(0) == "00bar" );
+		CHECK( ns.str(1) == "01bar" );
+		CHECK( ns.str(12) == "12bar" );
+		CHECK( ns.str(123) == "123bar" );
 	}
 
 	{
 		tuzz::numbered_string ns("fu%2nbar");
-		REQUIRE( ns.str(0) == "fu00bar" );
-		REQUIRE( ns.str(1) == "fu01bar" );
-		REQUIRE( ns.str(12) == "fu12bar" );
-		REQUIRE( ns.str(123) == "fu123bar" );
+		CHECK( ns.str(0) == "fu00bar" );
+		CHECK( ns.str(1) == "fu01bar" );
+		CHECK( ns.str(12) == "fu12bar" );
+		CHECK( ns.str(123) == "fu123bar" );
 	}
 }
 

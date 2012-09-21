@@ -1,5 +1,5 @@
-#ifndef INPUT_SRC__HPP
-#define INPUT_SRC__HPP
+#ifndef INPUT_SOURCE__HPP
+#define INPUT_SOURCE__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -27,25 +27,19 @@
 
 namespace tuzz {
 
-struct input_src {
-  input_src();
-  explicit input_src(const std::string & input_file);
+struct input_source {
+  input_source();
+  explicit input_source(const std::string & input_file);
 
-  input_src(input_src && other) = default;
-  input_src & operator=(input_src && other) = default;
-  ~input_src(); // = default for unique_ptr pimpl
-
-  std::istream & get_src() const;
-
-  bool input_from_stdin() const;
+	std::shared_ptr<std::istream> get_stream() const;
 
 private:
-  std::unique_ptr<std::istream> src_file_;
+  std::shared_ptr<std::istream> source_stream_;
 };
 
-struct input_src_error : public tuzz_error {
-  input_src_error();
-  input_src_error(const char* msg);
+struct input_source_error : public tuzz_error {
+  input_source_error();
+  input_source_error(const char* msg);
 };
 
 }

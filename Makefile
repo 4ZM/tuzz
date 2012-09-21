@@ -27,7 +27,7 @@ LDFLAGS_TEST = ${LDFLAGS}
 
 TUZZ_SRCS  =            \
   numbered_string.cpp   \
-  input_src.cpp         \
+  input_source.cpp      \
   cmdline_options.cpp
 
 TUZZ_OBJS = $(TUZZ_SRCS:.cpp=.o)
@@ -39,7 +39,7 @@ all: tuzz test
 TEST_BINS =                    \
   test/test_numbered_string    \
   test/test_cmdline_options    \
-  test/test_input_src
+  test/test_input_source
 
 tests: ${TEST_BINS}
 
@@ -67,7 +67,7 @@ test/test_numbered_string: test/src/test_numbered_string.cpp numbered_string.o
 test/test_cmdline_options: test/src/test_cmdline_options.cpp cmdline_options.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_input_src: test/src/test_input_src.cpp input_src.o
+test/test_input_source: test/src/test_input_source.cpp input_source.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 # makedepend section - set up include dependencies
