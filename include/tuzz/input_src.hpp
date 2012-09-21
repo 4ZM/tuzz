@@ -1,5 +1,5 @@
-#ifndef OPTIONS__HPP
-#define OPTIONS__HPP
+#ifndef INPUT_SRC__HPP
+#define INPUT_SRC__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -19,33 +19,33 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
+#include "tuzz/exception.hpp"
+
+#include <string>
+#include <istream>
+#include <memory>
 
 namespace tuzz {
 
-struct tuzz_options {
-  tuzz_options(int argc, const char* argv[]);
+struct input_src {
+  input_src();
+  explicit input_src(const std::string & input_file);
 
-  void show_usage() const;
+  input_src(input_src && other) = default;
+  input_src & operator=(input_src && other) = default;
+  ~input_src(); // = default for unique_ptr pimpl
 
-  void show_help() const;
+  std::istream & get_src() const;
 
-  void show_version() const;
-
-  bool stdin_as_input() const;
-
-  bool stdout_as_output() const;
-
-  std::vector<boost::filesystem::path> get_input_paths() const;
-  std::string get_output_pattern() const;
+  bool input_from_stdin() const;
 
 private:
-  void create_options_(int argc, const char* argv[]);
-  void process_options_();
+  std::unique_ptr<std::istream> src_file_;
+};
 
-  boost::program_options::variables_map vm_;
-  boost::program_options::options_description visible_options_;
+struct input_src_error : public tuzz_error {
+  input_src_error();
+  input_src_error(const char* msg);
 };
 
 }

@@ -17,8 +17,8 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz.hpp"
-#include "options.hpp"
+#include "tuzz/tuzz.hpp"
+#include "tuzz/cmdline_options.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -28,8 +28,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
-
-#include <boost/program_options.hpp>
 
 template<typename InIt, typename OutIt>
 std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
@@ -49,57 +47,12 @@ std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
 int main(int argc, const char* argv[]) {
   using namespace tuzz;
   namespace fs = boost::filesystem;
-  namespace po = boost::program_options;
   using namespace std;
 
-  tuzz_options opt(argc, argv);
+  cmdline_options opt(argc, argv);
 
-  if (opt.stdin_as_input() || opt.stdout_as_output())
-  {
-    cout << "-o- and -i- is not yet supported" << endl;
-    return 1;
-  }
-  else if (opt.get_input_paths().size() > 1) {
-    cout << "multiple inputs not yet supported" << endl;
-    return 1;
-  }
-
-  fs::path src_path(opt.get_input_paths()[0]);
-  fs::path dst_path(opt.get_output_pattern());
-
-  try {
-    if (!fs::exists(src_path) || !fs::is_regular_file(src_path)) {
-      cout << "No such file: " << src_path << endl;
-      return 1;
-    }
-
-    if (fs::exists(dst_path)) {
-      if (!fs::is_directory(dst_path)) {
-        cout << "Destination " << dst_path << " is not a directory: " << endl;
-        return 1;
-      }
-      else if (!fs::is_empty(dst_path)) {
-        cout << "Destination directory " << dst_path << " exists and is not empty." << endl;
-        return 1;
-      }
-    }
-    else if (!fs::create_directory(dst_path)) {
-      cout << "Failed to create dst: "  << dst_path << endl;
-      return 1;
-    }
-  }
-  catch (const fs::filesystem_error& ex) {
-    cout << ex.what() << endl;
-    return 1;
-  }
-
-  cout << "[+] Reading input file: " << src_path <<
-    " (" << fs::file_size(src_path) << " Bytes)" << endl;
-
-  // Load a pristine text file
-  fs::ifstream ifs(src_path);
   using sbuf_it_t = std::istreambuf_iterator<char>;
-  const string str = std::string((sbuf_it_t(ifs)), sbuf_it_t());
+  const string str = std::string((sbuf_it_t(std::cin)), sbuf_it_t());
 
   // Find chunks
   auto sep_iters =
@@ -114,18 +67,18 @@ int main(int argc, const char* argv[]) {
 
   cout << "[+] Loaded " << finjectors.size() << " fault injectors" << endl;
 
-  cout << "[+] Generating faulty files in " << dst_path << endl;
+  //cout << "[+] Generating faulty files in " << dst_path << endl;
 
   size_t variant = 0;
   for (auto finjector : finjectors) {
-    ostringstream fn;
-    fn << src_path.stem().generic_string()
-       << "_"
-       << std::to_string(variant)
-       << src_path.extension().generic_string();
+    // ostringstream fn;
+    // fn << src_path.stem().generic_string()
+    //    << "_"
+    //    << std::to_string(variant)
+    //    << src_path.extension().generic_string();
 
-    fs::ofstream ofs(fs::path(dst_path / fn.str()));
-    auto osbuf_it = std::ostreambuf_iterator<char>(ofs);
+    // fs::ofstream ofs(fs::path(dst_path / fn.str()));
+    auto osbuf_it = std::ostreambuf_iterator<char>(std::cout);
 
     apply_finjector(str.cbegin(), str.cend(),
                     osbuf_it,

@@ -16,28 +16,59 @@
 # along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
 
 GCC        = gcc
-CFLAGS     = -g -Wall -std=c++11
-LDFLAGS    = -lstdc++ -lboost_filesystem -lboost_program_options
+CFLAGS     = -g -Wall -std=c++11 -I include
+LDFLAGS    = -lstdc++                 \
+             -lboost_filesystem       \
+             -lboost_program_options  \
+             -lboost_regex
 
-TUZZ_SRCS  =    \
-  tuzz.cpp      \
-  options.cpp
+CFLAGS_TEST  = ${CFLAGS} -I test/include
+LDFLAGS_TEST = ${LDFLAGS}
 
-TUZZ_OBJS = $(TUZZ_SRCS:.c=.o)
+TUZZ_SRCS  =            \
+  numbered_string.cpp   \
+  input_src.cpp         \
+  cmdline_options.cpp
 
-.PHONY: clean all
+TUZZ_OBJS = $(TUZZ_SRCS:.cpp=.o)
 
-all: tuzz
+.PHONY: clean all test run_tests
+
+all: tuzz test
+
+TEST_BINS =                    \
+  test/test_numbered_string    \
+  test/test_cmdline_options    \
+  test/test_input_src
+
+tests: ${TEST_BINS}
+
+run_tests: tests
+	$(foreach var,$(TEST_BINS),$(var);)
 
 clean:
-	rm -f tuzz *~
+	rm -f tuzz *~ ${TEST_BINS} ${TUZZ_OBJS}
 
-tuzz: ${TUZZ_OBJS}
+
+# Build the tuzz binary
+tuzz: src/tuzz.cpp ${TUZZ_OBJS}
 	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
 
-# Generic compilation rule - make file plumbing
-%.o : %.c Makefile
-	${CC} ${CFLAGS} -c $<
+# Build object files from .cpp files in src dir
+%.o : src/%.cpp Makefile
+	${GCC} ${CFLAGS} -c $<
+
+
+# Testcases - need a bit of special care since
+# dependencies are hard to figure out automatically
+test/test_numbered_string: test/src/test_numbered_string.cpp numbered_string.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_cmdline_options: test/src/test_cmdline_options.cpp cmdline_options.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_input_src: test/src/test_input_src.cpp input_src.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 # makedepend section - set up include dependencies
 DEPFILE		= .depends
@@ -50,6 +81,7 @@ depend:
 
 $(DEPFILE):
 	@echo $(DEPTOKEN) > $(DEPFILE)
-	makedepend $(DEPFLAGS) -- $(CFLAGS) -- *.c 2> /dev/null
+	makedepend $(DEPFLAGS) -- $(CFLAGS) -- src/*.cpp 2> /dev/null
+	makedepend -a -o' ' $(DEPFLAGS) -- $(CFLAGS) -- test/src/*.cpp 2> /dev/null
 
 sinclude $(DEPFILE)
