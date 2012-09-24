@@ -29,9 +29,6 @@
 #include <sstream>
 #include <iterator>
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-
 template<typename InIt, typename OutIt>
 std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
   using namespace tuzz;
@@ -49,50 +46,38 @@ std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
 
 int main(int argc, const char* argv[]) {
   using namespace tuzz;
-  namespace fs = boost::filesystem;
-  using namespace std;
 
+  // Parse the command line options
   cmdline_options opt(argc, argv);
-
   if (opt.termination_requested())
     return 0;
 
+  // Setup input (file or stdin)
+  input_source source = opt.input_from_stdin()
+    ? input_source()
+    : input_source(opt.get_input_specification());
+
+  // Setup output (file or stdout)
+  output_target target = opt.output_to_stdout()
+    ? output_target()
+    : output_target(numbered_string(opt.get_output_specification()));
+
+  // Read data from the input
   using sbuf_it_t = std::istreambuf_iterator<char>;
-  input_source source;
-  if (!opt.input_from_stdin())
-    source = input_source(opt.get_input_specification());
-
   std::shared_ptr<std::istream> in_stream = source.get_stream();
-  const string str = std::string((sbuf_it_t(*in_stream)), sbuf_it_t());
-
-  output_target target;
-  if (!opt.output_to_stdout())
-    target = output_target(numbered_string(opt.get_output_specification()));
+  const std::string str = std::string((sbuf_it_t(*in_stream)), sbuf_it_t());
 
   // Find chunks
   auto sep_iters =
-    find_sep<initializer_list<char>>(str.cbegin(), str.cend(),
+    find_sep<std::initializer_list<char>>(str.cbegin(), str.cend(),
              { ',', ';', ':', '/', '(', ')', '-', '\n' });
-
-  cout << "    Found " << sep_iters.size() << " separators" << endl;
 
   // Cretate the fault injectors to use
   auto finjectors = make_finjectors<std::string::const_iterator,
                                     std::ostreambuf_iterator<char>>();
 
-  cout << "[+] Loaded " << finjectors.size() << " fault injectors" << endl;
-
-  //cout << "[+] Generating faulty files in " << dst_path << endl;
-
   size_t variant = 0;
   for (auto finjector : finjectors) {
-    // ostringstream fn;
-    // fn << src_path.stem().generic_string()
-    //    << "_"
-    //    << std::to_string(variant)
-    //    << src_path.extension().generic_string();
-
-    // fs::ofstream ofs(fs::path(dst_path / fn.str()));
     std::shared_ptr<std::ostream> stream_ptr = target.get_stream(variant);
     auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
 
@@ -102,8 +87,6 @@ int main(int argc, const char* argv[]) {
 
     ++variant;
   }
-
-  cout << "[+] Generation completed." << endl;
 
   return 0;
 }
