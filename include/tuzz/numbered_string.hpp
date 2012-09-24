@@ -50,7 +50,7 @@ private:
   std::string prefix_;
   std::string suffix_;
   size_t min_digits_ = 4;
-	const size_t max_min_digits_ = 10;
+  static const size_t max_min_digits_ = 10;
 };
 
 struct numbered_string_format_error : public tuzz_error {
