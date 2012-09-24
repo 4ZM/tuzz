@@ -61,7 +61,7 @@ numbered_string::numbered_string(const std::string& pattern) {
 }
 
 // Create the string corresponding to n
-std::string numbered_string::str(size_t n) {
+std::string numbered_string::str(size_t n) const {
   std::stringstream ss;
   ss << prefix_;
   ss << std::setw(min_digits_) << std::setfill('0') << n;

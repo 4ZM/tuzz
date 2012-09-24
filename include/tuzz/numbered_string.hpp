@@ -44,7 +44,7 @@ struct numbered_string {
   numbered_string(const std::string& pattern);
 
   // Get a string with the pattern substituted for the number n.
-  std::string str(size_t n);
+  std::string str(size_t n) const;
 
 private:
   std::string prefix_;
