@@ -19,6 +19,7 @@
 
 #include "tuzz/tuzz.hpp"
 #include "tuzz/cmdline_options.hpp"
+#include "tuzz/input_source.hpp"
 #include "tuzz/output_target.hpp"
 #include "tuzz/numbered_string.hpp"
 
@@ -57,8 +58,12 @@ int main(int argc, const char* argv[]) {
     return 0;
 
   using sbuf_it_t = std::istreambuf_iterator<char>;
+  input_source source;
+  if (!opt.input_from_stdin())
+    source = input_source(opt.get_input_specification());
 
-  const string str = std::string((sbuf_it_t(std::cin)), sbuf_it_t());
+  std::shared_ptr<std::istream> in_stream = source.get_stream();
+  const string str = std::string((sbuf_it_t(*in_stream)), sbuf_it_t());
 
   output_target target;
   if (!opt.output_to_stdout())
