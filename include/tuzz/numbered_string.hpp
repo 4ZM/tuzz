@@ -43,6 +43,12 @@ struct numbered_string {
    */
   explicit numbered_string(const std::string& pattern);
 
+  // Still want the default copy and move ctors
+  numbered_string(const tuzz::numbered_string & other) = default;
+  numbered_string(tuzz::numbered_string && other) = default;
+  tuzz::numbered_string& operator=(const tuzz::numbered_string & other) = default;
+  tuzz::numbered_string& operator=(tuzz::numbered_string && other) = default;
+
   // Get a string with the pattern substituted for the number n.
   std::string str(size_t n) const;
 
