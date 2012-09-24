@@ -51,6 +51,9 @@ int main(int argc, const char* argv[]) {
 
   cmdline_options opt(argc, argv);
 
+  if (opt.termination_requested())
+    return 0;
+
   using sbuf_it_t = std::istreambuf_iterator<char>;
   const string str = std::string((sbuf_it_t(std::cin)), sbuf_it_t());
 
