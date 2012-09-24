@@ -37,9 +37,9 @@ struct numbered_string {
   /**
    * The pattern is: prefix%dnsuffix and produces prefix0032suffix if d
    * is 4 or omitted (default) and str(32) is requested.
-	 *
-	 * Will throw numbered_string_format_error if the number place
-	 * holder is missing, malformated or if a bad width is specified.
+   *
+   * Will throw numbered_string_format_error if the number place
+   * holder is missing, malformated or if a bad width is specified.
    */
   numbered_string(const std::string& pattern);
 
