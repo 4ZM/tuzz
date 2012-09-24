@@ -36,7 +36,7 @@ input_source_error::input_source_error(const char* msg)
   : tuzz_error(msg) { }
 
 input_source::input_source() {
-	// Point to stdout and use nop deleter
+	// Point to stdin and use nop deleter
 	source_stream_ = std::shared_ptr<std::istream>(&std::cin, [] (std::istream*) { });
 } 
 
