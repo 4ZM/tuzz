@@ -19,6 +19,8 @@
 
 #include "tuzz/tuzz.hpp"
 #include "tuzz/cmdline_options.hpp"
+#include "tuzz/output_target.hpp"
+#include "tuzz/numbered_string.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -55,7 +57,12 @@ int main(int argc, const char* argv[]) {
     return 0;
 
   using sbuf_it_t = std::istreambuf_iterator<char>;
+
   const string str = std::string((sbuf_it_t(std::cin)), sbuf_it_t());
+
+  output_target target;
+  if (!opt.output_to_stdout())
+    target = output_target(numbered_string(opt.get_output_specification()));
 
   // Find chunks
   auto sep_iters =
@@ -81,7 +88,8 @@ int main(int argc, const char* argv[]) {
     //    << src_path.extension().generic_string();
 
     // fs::ofstream ofs(fs::path(dst_path / fn.str()));
-    auto osbuf_it = std::ostreambuf_iterator<char>(std::cout);
+    std::shared_ptr<std::ostream> stream_ptr = target.get_stream(variant);
+    auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
 
     apply_finjector(str.cbegin(), str.cend(),
                     osbuf_it,
