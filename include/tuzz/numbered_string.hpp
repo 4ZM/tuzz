@@ -41,7 +41,7 @@ struct numbered_string {
    * Will throw numbered_string_format_error if the number place
    * holder is missing, malformated or if a bad width is specified.
    */
-  numbered_string(const std::string& pattern);
+  explicit numbered_string(const std::string& pattern);
 
   // Get a string with the pattern substituted for the number n.
   std::string str(size_t n) const;
