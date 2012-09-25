@@ -29,6 +29,7 @@ TUZZ_SRCS  =            \
   numbered_string.cpp   \
   input_source.cpp      \
   output_target.cpp     \
+  prng.cpp              \
   cmdline_options.cpp
 
 TUZZ_OBJS = $(TUZZ_SRCS:.cpp=.o)
@@ -40,6 +41,7 @@ all: tuzz test
 TEST_BINS =                    \
   test/test_numbered_string    \
   test/test_cmdline_options    \
+  test/test_prng               \
   test/test_input_source       \
   test/test_output_target
 
@@ -67,6 +69,9 @@ test/test_numbered_string: test/src/test_numbered_string.cpp numbered_string.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_cmdline_options: test/src/test_cmdline_options.cpp cmdline_options.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_prng: test/src/test_prng.cpp prng.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_input_source: test/src/test_input_source.cpp input_source.o

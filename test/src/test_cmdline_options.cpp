@@ -216,3 +216,39 @@ TEST_CASE( "tuzz/utility/options/badargs", "Invalid arguments" ) {
     CHECK(co.termination_requested());
   }
 }
+
+TEST_CASE( "tuzz/utility/options/seed", "Random seed" ) {
+  SECTION("--seed n", "Valid use of the --seed option") {
+    std::stringstream ss;
+    const char* argv[] = { "prog_name", "--seed", "1337", nullptr };
+    REQUIRE_NOTHROW(tuzz::cmdline_options(3, argv, ss));
+    REQUIRE(ss.str().empty());
+
+    {
+      tuzz::cmdline_options co(3, argv, ss);
+      CHECK(co.has_random_seed());
+      CHECK(co.get_random_seed() == 1337);
+      CHECK_FALSE(co.termination_requested());
+    }
+  }
+
+  SECTION("--seed", "Invalid use of the --seed option, missing value") {
+    std::stringstream ss;
+    const char* argv[] = { "prog_name", "--seed", nullptr };
+    REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
+    REQUIRE_FALSE(ss.str().empty());
+
+    {
+      tuzz::cmdline_options co(2, argv, ss);
+      CHECK_FALSE(co.has_random_seed());
+      REQUIRE_THROWS_AS(co.get_random_seed(), tuzz::cmdline_options_error);
+      CHECK(co.termination_requested());
+    }
+  }
+
+  SECTION("--seed fubar", "Invalid use of the --seed option, bad value") {
+    std::stringstream ss;
+    const char* argv[] = { "prog_name", "--seed", "fubar", nullptr };
+    REQUIRE_THROWS(tuzz::cmdline_options(3, argv, ss));
+  }
+}

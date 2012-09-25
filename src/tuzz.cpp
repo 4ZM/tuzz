@@ -22,6 +22,7 @@
 #include "tuzz/input_source.hpp"
 #include "tuzz/output_target.hpp"
 #include "tuzz/numbered_string.hpp"
+#include "tuzz/prng.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -62,6 +63,10 @@ int main(int argc, const char* argv[]) {
     ? output_target()
     : output_target(numbered_string(opt.get_output_specification()));
 
+  prng random_gen = opt.has_random_seed()
+    ? prng(opt.get_random_seed())
+    : prng();
+
   // Read data from the input
   using sbuf_it_t = std::istreambuf_iterator<char>;
   std::shared_ptr<std::istream> in_stream = source.get_stream();
@@ -76,17 +81,13 @@ int main(int argc, const char* argv[]) {
   auto finjectors = make_finjectors<std::string::const_iterator,
                                     std::ostreambuf_iterator<char>>();
 
-  size_t variant = 0;
-  for (auto finjector : finjectors) {
-    std::shared_ptr<std::ostream> stream_ptr = target.get_stream(variant);
-    auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
+  size_t variant = random_gen(finjectors.size() - 1);
+  std::shared_ptr<std::ostream> stream_ptr = target.get_stream(variant);
+  auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
 
-    apply_finjector(str.cbegin(), str.cend(),
-                    osbuf_it,
-                    sep_iters, finjector);
-
-    ++variant;
-  }
+  apply_finjector(str.cbegin(), str.cend(),
+                  osbuf_it,
+                  sep_iters, finjectors[variant]);
 
   return 0;
 }

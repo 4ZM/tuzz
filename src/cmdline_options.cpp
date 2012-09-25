@@ -29,6 +29,12 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 using namespace tuzz;
 
+cmdline_options_error::cmdline_options_error()
+  : tuzz_error("Command line options processing error") { }
+
+cmdline_options_error::cmdline_options_error(const char* msg)
+  : tuzz_error(msg) { }
+
 po::options_description create_visible_options_();
 po::options_description create_hidden_options_();
 po::positional_options_description create_positional_options_();
@@ -128,12 +134,25 @@ std::string cmdline_options::get_output_specification() const {
   return is_output_to_stdout() ? "-" : impl_->vm["output"].as<std::string>();
 }
 
+unsigned int cmdline_options::get_random_seed() const {
+  if (impl_->vm.count("seed")) {
+    return impl_->vm["seed"].as<unsigned int>();
+  }
+
+  throw cmdline_options_error("Random seed requested, but no such option present");
+}
+
+bool cmdline_options::has_random_seed() const {
+  return impl_->vm.count("seed") > 0;
+}
+
 boost::program_options::options_description create_visible_options_() {
   po::options_description visible("Allowed options");
   visible.add_options()
     ("help,h", "produce help message")
     ("version,v", "print version string")
     ("output,o", po::value<std::string>()->default_value("-"), "output file pattern (%dn) or -")
+    ("seed", po::value<unsigned int>(), "random seed")
     ;
 
   return visible;

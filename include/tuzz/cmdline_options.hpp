@@ -24,6 +24,8 @@
 #include <iostream>
 #include <memory>
 
+#include "tuzz/exception.hpp"
+
 namespace tuzz {
 
 struct cmdline_options {
@@ -46,9 +48,17 @@ struct cmdline_options {
   std::string get_input_specification() const;
   std::string get_output_specification() const;
 
+  bool has_random_seed() const;
+  unsigned int get_random_seed() const;
+
 private:
   struct impl;
   std::unique_ptr<impl> impl_;
+};
+
+struct cmdline_options_error : public tuzz_error {
+  cmdline_options_error();
+  cmdline_options_error(const char* msg);
 };
 
 }
