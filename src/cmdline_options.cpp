@@ -112,20 +112,20 @@ bool cmdline_options::termination_requested() const {
   return impl_->termination_requested;
 }
 
-bool cmdline_options::input_from_stdin() const {
+bool cmdline_options::is_input_from_stdin() const {
   return !impl_->vm.count("input") || impl_->vm["input"].as<std::string>() == "-";
 }
 
-bool cmdline_options::output_to_stdout() const {
+bool cmdline_options::is_output_to_stdout() const {
   return !impl_->vm.count("output") || impl_->vm["output"].as<std::string>() == "-";
 }
 
 std::string cmdline_options::get_input_specification() const {
-  return input_from_stdin() ? "-" : impl_->vm["input"].as<std::string>();
+  return is_input_from_stdin() ? "-" : impl_->vm["input"].as<std::string>();
 }
 
 std::string cmdline_options::get_output_specification() const {
-  return output_to_stdout() ? "-" : impl_->vm["output"].as<std::string>();
+  return is_output_to_stdout() ? "-" : impl_->vm["output"].as<std::string>();
 }
 
 boost::program_options::options_description create_visible_options_() {

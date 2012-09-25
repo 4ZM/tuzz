@@ -40,8 +40,8 @@ struct cmdline_options {
 
   void show_version() const;
 
-  bool input_from_stdin() const;
-  bool output_to_stdout() const;
+  bool is_input_from_stdin() const;
+  bool is_output_to_stdout() const;
 
   std::string get_input_specification() const;
   std::string get_output_specification() const;

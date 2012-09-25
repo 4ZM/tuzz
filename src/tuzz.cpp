@@ -53,12 +53,12 @@ int main(int argc, const char* argv[]) {
     return 0;
 
   // Setup input (file or stdin)
-  input_source source = opt.input_from_stdin()
+  input_source source = opt.is_input_from_stdin()
     ? input_source()
     : input_source(opt.get_input_specification());
 
   // Setup output (file or stdout)
-  output_target target = opt.output_to_stdout()
+  output_target target = opt.is_output_to_stdout()
     ? output_target()
     : output_target(numbered_string(opt.get_output_specification()));
 
