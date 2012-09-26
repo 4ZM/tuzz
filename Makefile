@@ -25,25 +25,28 @@ LDFLAGS    = -lstdc++                 \
 CFLAGS_TEST  = ${CFLAGS} -I test/include
 LDFLAGS_TEST = ${LDFLAGS}
 
-TUZZ_SRCS  =            \
-  numbered_string.cpp   \
-  input_source.cpp      \
-  output_target.cpp     \
-  prng.cpp              \
-  cmdline_options.cpp
+TUZZ_SRCS  =                       \
+  numbered_string.cpp              \
+  input_source.cpp                 \
+  output_target.cpp                \
+  cmdline_options.cpp              \
+  prng.cpp                         \
+  slicer.cpp                       \
 
-TUZZ_OBJS = $(TUZZ_SRCS:.cpp=.o)
+TUZZ_OBJS1 = $(notdir $(TUZZ_SRCS))
+TUZZ_OBJS = $(TUZZ_OBJS1:.cpp=.o)
 
 .PHONY: clean all test run_tests
 
 all: tuzz test
 
-TEST_BINS =                    \
-  test/test_numbered_string    \
-  test/test_cmdline_options    \
-  test/test_prng               \
-  test/test_input_source       \
-  test/test_output_target
+TEST_BINS =                               \
+  test/test_numbered_string               \
+  test/test_cmdline_options               \
+  test/test_prng                          \
+  test/test_input_source                  \
+  test/test_output_target                 \
+  test/test_delimiter_slicer
 
 tests: ${TEST_BINS}
 
@@ -62,6 +65,8 @@ tuzz: src/tuzz.cpp ${TUZZ_OBJS}
 %.o : src/%.cpp Makefile
 	${GCC} ${CFLAGS} -c $<
 
+%.o : src/slicers/%.cpp Makefile
+	${GCC} ${CFLAGS} -c $<
 
 # Testcases - need a bit of special care since
 # dependencies are hard to figure out automatically
@@ -75,6 +80,9 @@ test/test_prng: test/src/test_prng.cpp prng.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_input_source: test/src/test_input_source.cpp input_source.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_output_target: test/src/test_output_target.cpp output_target.o numbered_string.o
