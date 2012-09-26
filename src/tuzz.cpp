@@ -24,6 +24,9 @@
 #include "tuzz/numbered_string.hpp"
 #include "tuzz/prng.hpp"
 
+#include "tuzz/slicers/all_slicer.hpp"
+#include "tuzz/slicers/delimiter_slicer.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -71,6 +74,12 @@ int main(int argc, const char* argv[]) {
   using sbuf_it_t = std::istreambuf_iterator<char>;
   std::shared_ptr<std::istream> in_stream = source.get_stream();
   const std::string str = std::string((sbuf_it_t(*in_stream)), sbuf_it_t());
+
+  // Create the slicers
+  using str_cit_t = std::string::const_iterator;
+  std::vector<std::unique_ptr<slicer<str_cit_t>>> slicers;
+  slicers.push_back(std::unique_ptr<slicer<str_cit_t>>(new all_slicer<str_cit_t>()));
+  slicers.push_back(std::unique_ptr<slicer<str_cit_t>>(new delimiter_slicer<str_cit_t>(',')));
 
   // Find chunks
   auto sep_iters =
