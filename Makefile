@@ -46,7 +46,8 @@ TEST_BINS =                               \
   test/test_prng                          \
   test/test_input_source                  \
   test/test_output_target                 \
-  test/test_delimiter_slicer
+  test/test_delimiter_slicer              \
+  test/test_all_slicer
 
 tests: ${TEST_BINS}
 
@@ -83,6 +84,9 @@ test/test_input_source: test/src/test_input_source.cpp input_source.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_all_slicer: test/src/slicers/test_all_slicer.cpp
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_output_target: test/src/test_output_target.cpp output_target.o numbered_string.o
