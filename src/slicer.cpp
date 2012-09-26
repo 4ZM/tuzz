@@ -19,8 +19,6 @@
 
 #include "tuzz/slicer.hpp"
 
-#include <algorithm>
-
 using namespace tuzz;
 
 slicer_error::slicer_error()

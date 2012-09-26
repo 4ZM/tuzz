@@ -22,7 +22,6 @@
 #include "tuzz/exception.hpp"
 
 #include <vector>
-#include <utility>
 
 namespace tuzz {
 
