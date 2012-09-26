@@ -22,7 +22,7 @@ TEST_CASE( "tuzz/utility/options/noargs", "No aruments" ) {
 }
 
 TEST_CASE( "tuzz/utility/options/help", "Help request" ) {
-  {
+  SECTION("-h", "Using short hand option") {
     std::stringstream ss;
     const char* argv[] = { "prog_name", "-h", nullptr };
     REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
@@ -30,7 +30,7 @@ TEST_CASE( "tuzz/utility/options/help", "Help request" ) {
     tuzz::cmdline_options co(2, argv, ss);
     CHECK(co.termination_requested());
   }
-  {
+  SECTION("--help", "Using full option name") {
     std::stringstream ss;
     const char* argv[] = { "prog_name", "--help", nullptr };
     REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
@@ -41,7 +41,7 @@ TEST_CASE( "tuzz/utility/options/help", "Help request" ) {
 }
 
 TEST_CASE( "tuzz/utility/options/version", "Version info request" ) {
-  {
+	SECTION("-v", "Using short hand option") {
     std::stringstream ss;
     const char* argv[] = { "prog_name", "-v", nullptr };
     REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
@@ -49,7 +49,7 @@ TEST_CASE( "tuzz/utility/options/version", "Version info request" ) {
     tuzz::cmdline_options co(2, argv, ss);
     CHECK(co.termination_requested());
   }
-  {
+  SECTION("--version", "Using full option name") {
     std::stringstream ss;
     const char* argv[] = { "prog_name", "--version", nullptr };
     REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
