@@ -22,7 +22,6 @@
 #include "tuzz/slicer.hpp"
 
 #include <iterator>
-#include <string>
 
 namespace tuzz {
 
@@ -37,8 +36,7 @@ struct delimiter_slicer_base final : public tuzz::slicer_base<InIt> {
   delimiter_type delimiter_;
 };
 
-using delimiter_slicer = delimiter_slicer_base<std::string::const_iterator>;
-
+using delimiter_slicer = delimiter_slicer_base<tuzz::slicer_base<>::input_iterator>;
 }
 
 #include "../src/slicers/delimiter_slicer.cpp"

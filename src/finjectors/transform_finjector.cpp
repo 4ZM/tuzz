@@ -1,5 +1,3 @@
-#ifndef SLICER__HPP
-#define SLICER__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -19,32 +17,16 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/exception.hpp"
+using namespace tuzz;
 
-#include <vector>
-#include <string>
+#include <algorithm>
 
-namespace tuzz {
+template<typename InIt, typename OutIt, typename F>
+transform_finjector_base<InIt, OutIt, F>::transform_finjector_base(F f)
+  : f_(f) { }
 
-template<typename InIt = std::string::const_iterator>
-using chunks_base = std::vector<std::pair<InIt, InIt>>;
-
-template <typename InIt = std::string::const_iterator>
-struct slicer_base {
-  using input_iterator = InIt;
-
-  virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) = 0;
-  virtual ~slicer_base() = default;
-};
-
-struct slicer_error : public tuzz_error {
-  slicer_error();
-  slicer_error(const char* msg);
-};
-
-// Convenience definitions
-using chunks = chunks_base<>;
-using slicer = slicer_base<>;
+template<typename InIt, typename OutIt, typename F>
+OutIt transform_finjector_base<InIt, OutIt, F>::inject(InIt first, InIt end, OutIt out) {
+  return std::transform(first, end, out, f_);
 }
 
-#endif

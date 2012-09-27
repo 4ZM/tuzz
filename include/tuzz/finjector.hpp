@@ -1,5 +1,5 @@
-#ifndef SLICER__HPP
-#define SLICER__HPP
+#ifndef FINJECTOR__HPP
+#define FINJECTOR__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -21,30 +21,27 @@
 
 #include "tuzz/exception.hpp"
 
-#include <vector>
 #include <string>
+#include <iterator>
 
 namespace tuzz {
 
-template<typename InIt = std::string::const_iterator>
-using chunks_base = std::vector<std::pair<InIt, InIt>>;
-
-template <typename InIt = std::string::const_iterator>
-struct slicer_base {
+template <typename InIt = std::string::const_iterator, typename OutIt = std::back_insert_iterator<std::string>>
+struct finjector_base {
   using input_iterator = InIt;
+  using output_iterator = OutIt;
 
-  virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) = 0;
-  virtual ~slicer_base() = default;
+  virtual OutIt inject(InIt first, InIt end, OutIt out) = 0;
+  virtual ~finjector_base() = default;
 };
 
-struct slicer_error : public tuzz_error {
-  slicer_error();
-  slicer_error(const char* msg);
+struct finjector_error : public tuzz_error {
+  finjector_error();
+  finjector_error(const char* msg);
 };
 
-// Convenience definitions
-using chunks = chunks_base<>;
-using slicer = slicer_base<>;
+// Convenience definition
+using finjector = finjector_base<>;
 }
 
 #endif

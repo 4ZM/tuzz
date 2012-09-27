@@ -79,6 +79,10 @@ int main(int argc, const char* argv[]) {
   std::vector<std::unique_ptr<slicer>> slicers;
   slicers.push_back(std::unique_ptr<slicer>(new all_slicer()));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(',')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(';')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('.')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('/')));
+  chunks c = slicers[random_gen(slicers.size() - 1)]->slice(str.cbegin(), str.cend());
 
   // Find chunks
   auto sep_iters =

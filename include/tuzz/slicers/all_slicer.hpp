@@ -21,8 +21,6 @@
 
 #include "tuzz/slicer.hpp"
 
-#include <string>
-
 namespace tuzz {
 
 template <typename InIt>
@@ -30,8 +28,7 @@ struct all_slicer_base final : public tuzz::slicer_base<InIt> {
   virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) override;
 };
 
-using all_slicer = all_slicer_base<std::string::const_iterator>;
-
+using all_slicer = all_slicer_base<tuzz::slicer_base<>::input_iterator>;
 }
 
 #include "../src/slicers/all_slicer.cpp"

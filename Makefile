@@ -46,6 +46,7 @@ TEST_BINS =                               \
   test/test_prng                          \
   test/test_input_source                  \
   test/test_output_target                 \
+  test/test_transform_finjector           \
   test/test_delimiter_slicer              \
   test/test_all_slicer
 
@@ -69,6 +70,9 @@ tuzz: src/tuzz.cpp ${TUZZ_OBJS}
 %.o : src/slicers/%.cpp Makefile
 	${GCC} ${CFLAGS} -c $<
 
+%.o : src/finjectors/%.cpp Makefile
+	${GCC} ${CFLAGS} -c $<
+
 # Testcases - need a bit of special care since
 # dependencies are hard to figure out automatically
 test/test_numbered_string: test/src/test_numbered_string.cpp numbered_string.o
@@ -83,7 +87,10 @@ test/test_prng: test/src/test_prng.cpp prng.o
 test/test_input_source: test/src/test_input_source.cpp input_source.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp
+test/test_transform_finjector: test/src/finjectors/test_transform_finjector.cpp include/tuzz/finjectors/transform_finjector.hpp
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp include/tuzz/slicers/delimiter_slicer.hpp
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_all_slicer: test/src/slicers/test_all_slicer.cpp
