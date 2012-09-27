@@ -76,10 +76,9 @@ int main(int argc, const char* argv[]) {
   const std::string str = std::string((sbuf_it_t(*in_stream)), sbuf_it_t());
 
   // Create the slicers
-  using str_cit_t = std::string::const_iterator;
-  std::vector<std::unique_ptr<slicer<str_cit_t>>> slicers;
-  slicers.push_back(std::unique_ptr<slicer<str_cit_t>>(new all_slicer<str_cit_t>()));
-  slicers.push_back(std::unique_ptr<slicer<str_cit_t>>(new delimiter_slicer<str_cit_t>(',')));
+  std::vector<std::unique_ptr<slicer>> slicers;
+  slicers.push_back(std::unique_ptr<slicer>(new all_slicer()));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(',')));
 
   // Find chunks
   auto sep_iters =

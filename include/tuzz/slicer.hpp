@@ -22,16 +22,17 @@
 #include "tuzz/exception.hpp"
 
 #include <vector>
+#include <string>
 
 namespace tuzz {
 
 template<typename InIt>
-using chunks = std::vector<std::pair<InIt, InIt>>;
+using chunks_base = std::vector<std::pair<InIt, InIt>>;
 
 template <typename InIt>
-struct slicer {
-  virtual tuzz::chunks<InIt> slice(InIt first, InIt end) = 0;
-  virtual ~slicer() = default;
+struct slicer_base {
+  virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) = 0;
+  virtual ~slicer_base() = default;
 };
 
 struct slicer_error : public tuzz_error {
@@ -39,6 +40,8 @@ struct slicer_error : public tuzz_error {
   slicer_error(const char* msg);
 };
 
+using chunks = chunks_base<std::string::const_iterator>;
+using slicer = slicer_base<std::string::const_iterator>;
 }
 
 #endif

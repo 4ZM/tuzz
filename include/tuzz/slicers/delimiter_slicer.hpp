@@ -22,19 +22,22 @@
 #include "tuzz/slicer.hpp"
 
 #include <iterator>
+#include <string>
 
 namespace tuzz {
 
 template <typename InIt>
-struct delimiter_slicer final : public tuzz::slicer<InIt> {
+struct delimiter_slicer_base final : public tuzz::slicer_base<InIt> {
   using delimiter_type = typename std::iterator_traits<InIt>::value_type;
 
-  explicit delimiter_slicer(typename delimiter_slicer<InIt>::delimiter_type delimiter);
-  virtual tuzz::chunks<InIt> slice(InIt first, InIt end) override;
+  explicit delimiter_slicer_base(typename delimiter_slicer_base<InIt>::delimiter_type delimiter);
+  virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) override;
 
  private:
   delimiter_type delimiter_;
 };
+
+using delimiter_slicer = delimiter_slicer_base<std::string::const_iterator>;
 
 }
 

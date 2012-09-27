@@ -22,12 +22,13 @@
 using namespace tuzz;
 
 template<typename InIt>
-delimiter_slicer<InIt>::delimiter_slicer(typename delimiter_slicer<InIt>::delimiter_type delimiter)
+delimiter_slicer_base<InIt>::delimiter_slicer_base
+(typename delimiter_slicer_base<InIt>::delimiter_type delimiter)
   : delimiter_(delimiter) { }
 
 template<typename InIt>
-tuzz::chunks<InIt> delimiter_slicer<InIt>::slice(InIt first, InIt end) {
-  chunks<InIt> cs;
+tuzz::chunks_base<InIt> delimiter_slicer_base<InIt>::slice(InIt first, InIt end) {
+  chunks_base<InIt> cs;
 
   auto it = first;
   do {

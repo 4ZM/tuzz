@@ -17,11 +17,11 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
+#include <utility>
 
 using namespace tuzz;
 
 template<typename InIt>
-tuzz::chunks<InIt> all_slicer<InIt>::slice(InIt first, InIt end) {
-  return chunks<InIt> { std::make_pair(first, end) };
+tuzz::chunks_base<InIt> all_slicer_base<InIt>::slice(InIt first, InIt end) {
+  return chunks_base<InIt> { std::make_pair(first, end) };
 }
