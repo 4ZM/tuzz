@@ -21,7 +21,7 @@ TEST_CASE( "tuzz/utility/numbered_string/ctor", "Construction" ) {
 }
 
 TEST_CASE( "tuzz/utility/numbered_string/str", "String creation" ) {
-	{
+	SECTION("%2n", "At least two digits") {
 		tuzz::numbered_string ns("%2n");
 		CHECK( ns.str(0) == "00" );
 		CHECK( ns.str(1) == "01" );
@@ -29,7 +29,7 @@ TEST_CASE( "tuzz/utility/numbered_string/str", "String creation" ) {
 		CHECK( ns.str(123) == "123" );
 	}
 
-	{
+	SECTION("fu%2n", "fu + at least two digits") {
 		tuzz::numbered_string ns("fu%2n");
 		CHECK( ns.str(0) == "fu00" );
 		CHECK( ns.str(1) == "fu01" );
@@ -37,7 +37,7 @@ TEST_CASE( "tuzz/utility/numbered_string/str", "String creation" ) {
 		CHECK( ns.str(123) == "fu123" );
 	}
 
-	{
+	SECTION("%2nbar", "At least two digits + bar") {
 		tuzz::numbered_string ns("%2nbar");
 		CHECK( ns.str(0) == "00bar" );
 		CHECK( ns.str(1) == "01bar" );
@@ -45,7 +45,7 @@ TEST_CASE( "tuzz/utility/numbered_string/str", "String creation" ) {
 		CHECK( ns.str(123) == "123bar" );
 	}
 
-	{
+	SECTION("fu%2nbar", "fu + at least two digits + bar") {
 		tuzz::numbered_string ns("fu%2nbar");
 		CHECK( ns.str(0) == "fu00bar" );
 		CHECK( ns.str(1) == "fu01bar" );
