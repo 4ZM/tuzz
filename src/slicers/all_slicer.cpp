@@ -21,7 +21,6 @@
 
 using namespace tuzz;
 
-template<typename InIt>
-tuzz::chunks_base<InIt> all_slicer_base<InIt>::slice(InIt first, InIt end) {
-  return chunks_base<InIt> { std::make_pair(first, end) };
+tuzz::chunks all_slicer::slice(const std::string& input) {
+  return chunks { std::make_pair(input.cbegin(), input.cend()) };
 }

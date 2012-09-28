@@ -23,12 +23,10 @@
 
 namespace tuzz {
 
-template <typename InIt>
-struct all_slicer_base final : public tuzz::slicer_base<InIt> {
-  virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) override;
+struct all_slicer final : public tuzz::slicer {
+  virtual tuzz::chunks slice(const std::string& input) override;
 };
 
-using all_slicer = all_slicer_base<tuzz::slicer_base<>::input_iterator>;
 }
 
 #include "../src/slicers/all_slicer.cpp"

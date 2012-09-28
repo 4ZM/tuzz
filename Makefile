@@ -47,6 +47,7 @@ TEST_BINS =                               \
   test/test_input_source                  \
   test/test_output_target                 \
   test/test_transform_finjector           \
+  test/test_repeat_finjector              \
   test/test_delimiter_slicer              \
   test/test_all_slicer
 
@@ -88,6 +89,9 @@ test/test_input_source: test/src/test_input_source.cpp input_source.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_transform_finjector: test/src/finjectors/test_transform_finjector.cpp include/tuzz/finjectors/transform_finjector.hpp
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp include/tuzz/finjectors/repeat_finjector.hpp
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp include/tuzz/slicers/delimiter_slicer.hpp

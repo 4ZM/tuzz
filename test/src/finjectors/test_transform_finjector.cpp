@@ -13,10 +13,9 @@ TEST_CASE( "tuzz/finjectors/transform_finjector/ctor", "Testing the constructor"
 TEST_CASE( "tuzz/finjectors/transform_finjectors/vanilla", "Testing with identiry transform" ) {
 
   const std::string text("fubar");
-  std::string out;
 
   auto fijn = std::make_shared<tuzz::transform_finjector>([] (char x) { return x; });
-  fijn->inject(text.cbegin(), text.cend(), std::back_inserter(out));
+  std::string out = fijn->inject(text);
 
   CHECK(out == text);
 }
@@ -24,21 +23,19 @@ TEST_CASE( "tuzz/finjectors/transform_finjectors/vanilla", "Testing with identir
 TEST_CASE( "tuzz/finjectors/transform_finjectors/external_f", "Testing using the toupper function" ) {
 
   const std::string text("fUbAr");
-  std::string out;
 
   auto fijn = std::make_shared<tuzz::transform_finjector>(toupper);
-  fijn->inject(text.cbegin(), text.cend(), std::back_inserter(out));
+  std::string out = fijn->inject(text);
 
   CHECK(out == "FUBAR");
 }
 
 TEST_CASE( "tuzz/finjectors/transform_finjectors/empty_input", "Runing on empty input" ) {
 
-  const std::string text;
-  std::string out;
+  const std::string text("");
 
   auto fijn = std::make_shared<tuzz::transform_finjector>(toupper);
-  fijn->inject(text.cbegin(), text.cend(), std::back_inserter(out));
+  std::string out = fijn->inject(text);
 
   CHECK(out == "");
 }

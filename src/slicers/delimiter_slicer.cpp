@@ -21,30 +21,33 @@
 
 using namespace tuzz;
 
-template<typename InIt>
-delimiter_slicer_base<InIt>::delimiter_slicer_base
-(typename delimiter_slicer_base<InIt>::delimiter_type delimiter)
+delimiter_slicer::delimiter_slicer(char delimiter)
   : delimiter_(delimiter) { }
 
-template<typename InIt>
-tuzz::chunks_base<InIt> delimiter_slicer_base<InIt>::slice(InIt first, InIt end) {
-  chunks_base<InIt> cs;
+tuzz::chunks delimiter_slicer::slice(const std::string& input) {
+  chunks cs;
 
-  auto it = first;
+  auto it = input.cbegin();
   do {
+    // Find the next separator (if any)
+    auto match = std::find(it, input.cend(), delimiter_);
 
-    auto match = std::find(it, end, delimiter_);
-
+    // And store the preceeding chunk
     cs.push_back(std::make_pair(it, match));
 
-    // Advance past the delimiter (unless we are at the end of input)
-    if (match != end)
-      ++match;
+    // If we found a delimiter, step past it
+    if (match != input.cend()) {
+      it = ++match;
 
-    // Start over from the end + 1 of the last match
-    it = match;
-
-  } while (it != end);
+      // If the delimiter was the very last character, add a last empty chunk
+      if (it == input.cend())
+        cs.push_back(std::make_pair(it, it));
+    }
+    else {
+      // We are at the end, drop out of the loop
+      it = match;
+    }
+  } while(it != input.cend());
 
   return cs;
 }

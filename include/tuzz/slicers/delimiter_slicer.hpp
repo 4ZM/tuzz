@@ -25,18 +25,14 @@
 
 namespace tuzz {
 
-template <typename InIt>
-struct delimiter_slicer_base final : public tuzz::slicer_base<InIt> {
-  using delimiter_type = typename std::iterator_traits<InIt>::value_type;
-
-  explicit delimiter_slicer_base(typename delimiter_slicer_base<InIt>::delimiter_type delimiter);
-  virtual tuzz::chunks_base<InIt> slice(InIt first, InIt end) override;
+struct delimiter_slicer final : public tuzz::slicer {
+  explicit delimiter_slicer(char delimiter);
+  virtual tuzz::chunks slice(const std::string& input) override;
 
  private:
-  delimiter_type delimiter_;
+  char delimiter_;
 };
 
-using delimiter_slicer = delimiter_slicer_base<tuzz::slicer_base<>::input_iterator>;
 }
 
 #include "../src/slicers/delimiter_slicer.cpp"

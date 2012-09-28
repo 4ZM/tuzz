@@ -21,12 +21,12 @@ using namespace tuzz;
 
 #include <algorithm>
 
-template<typename InIt, typename OutIt, typename F>
-transform_finjector_base<InIt, OutIt, F>::transform_finjector_base(F f)
+transform_finjector::transform_finjector(std::function<char(char)> f)
   : f_(f) { }
 
-template<typename InIt, typename OutIt, typename F>
-OutIt transform_finjector_base<InIt, OutIt, F>::inject(InIt first, InIt end, OutIt out) {
-  return std::transform(first, end, out, f_);
+std::string transform_finjector::inject(const std::string& chunk) {
+  std::string output;
+  std::transform(chunk.cbegin(), chunk.cend(), std::back_inserter(output), f_);
+  return output;
 }
 

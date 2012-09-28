@@ -1,5 +1,5 @@
-#ifndef TRANSFORM_FINJECTOR__HPP
-#define TRANSFORM_FINJECTOR__HPP
+#ifndef REPEAT_FINJECTOR__HPP
+#define REPEAT_FINJECTOR__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -25,24 +25,39 @@
 
 namespace tuzz {
 
+namespace position {
+enum type {
+  begining = 1<<0,
+  middle   = 1<<1,
+  end      = 1<<2,
+};
+
+type operator|(type t1, type t2) {
+  return static_cast<type>(static_cast<int>(t1) | static_cast<int>(t2));
+}
+}
+
 /**
  * Transform the input range, one value at a time, using
  * a specified function.
  */
-struct transform_finjector final : public finjector {
+struct repeat_finjector final : public finjector {
 
-  explicit transform_finjector(std::function<char(char)> f);
+  repeat_finjector(size_t n, tuzz::position::type position);
+  repeat_finjector(size_t n, tuzz::position::type position, bool skip_ws);
   virtual std::string inject(const std::string& chunk) override;
 
   // Hack for GCC Bug 53613, remove dtor when fixed
-  virtual ~transform_finjector() noexcept {};
+  // virtual ~repeat_finjector_base() noexcept {};
 
 private:
-  std::function<char(char)> f_;
+  size_t n_;
+  position::type position_;
+  bool skip_ws_;
 };
 
 }
 
-#include "../src/finjectors/transform_finjector.cpp"
+#include "../src/finjectors/repeat_finjector.cpp"
 
 #endif

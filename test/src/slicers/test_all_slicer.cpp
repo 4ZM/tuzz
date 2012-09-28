@@ -8,18 +8,18 @@ TEST_CASE( "tuzz/slicers/all_slicer/ctor", "Testing the constructor" ) {
 }
 
 TEST_CASE( "tuzz/slicers/all_slicer/vanilla", "Testing the minimal slicer" ) {
-  std::string text("fubar");
+  const std::string text("fubar");
   tuzz::all_slicer as;
-  tuzz::chunks chunks = as.slice(text.cbegin(), text.cend());
+  tuzz::chunks chunks = as.slice(text);
 
   REQUIRE(chunks.size() == 1);
   CHECK(std::string(chunks[0].first, chunks[0].second) == "fubar");
 }
 
 TEST_CASE( "tuzz/slicers/all_slicer/empty", "Empty input" ) {
-  std::string text;
+  const std::string text;
   tuzz::all_slicer as;
-  tuzz::chunks chunks = as.slice(text.cbegin(), text.cend());
+  tuzz::chunks chunks = as.slice(text);
 
   REQUIRE(chunks.size() == 1);
   CHECK(std::string(chunks[0].first, chunks[0].second) == "");

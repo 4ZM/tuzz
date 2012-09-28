@@ -26,13 +26,9 @@
 
 namespace tuzz {
 
-template <typename InIt = std::string::const_iterator, typename OutIt = std::back_insert_iterator<std::string>>
-struct finjector_base {
-  using input_iterator = InIt;
-  using output_iterator = OutIt;
-
-  virtual OutIt inject(InIt first, InIt end, OutIt out) = 0;
-  virtual ~finjector_base() = default;
+struct finjector {
+  virtual std::string inject(const std::string& chunk) = 0;
+  virtual ~finjector() = default;
 };
 
 struct finjector_error : public tuzz_error {
@@ -40,8 +36,6 @@ struct finjector_error : public tuzz_error {
   finjector_error(const char* msg);
 };
 
-// Convenience definition
-using finjector = finjector_base<>;
 }
 
 #endif
