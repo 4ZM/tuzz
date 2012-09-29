@@ -1,5 +1,3 @@
-#ifndef DELIMITER_SLICER__HPP
-#define DELIMITER_SLICER__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -19,22 +17,22 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/slicer.hpp"
 #include "tuzz/chunk.hpp"
 
-#include <iterator>
-#include <vector>
+#include <string>
 
-namespace tuzz {
+using namespace tuzz;
 
-struct delimiter_slicer final : public tuzz::slicer {
-  explicit delimiter_slicer(char delimiter);
-  virtual std::vector<tuzz::chunk> slice(const std::string& input) override;
+chunk::chunk(std::string::const_iterator begin, std::string::const_iterator end, tuzz::chunk_type type)
+  : begin_(begin), end_(end), type_(type) {}
 
- private:
-  char delimiter_;
-};
+chunk::chunk(std::string::const_iterator begin, std::string::const_iterator end)
+  : chunk(begin, end, chunk_type::unclassified) {}
 
-}
+std::string::const_iterator chunk::cbegin() const { return begin_; }
 
-#endif
+std::string::const_iterator chunk::cend() const { return end_; }
+
+tuzz::chunk_type chunk::type() const { return type_; }
+
+std::string chunk::str() const { return std::string(begin_, end_); }

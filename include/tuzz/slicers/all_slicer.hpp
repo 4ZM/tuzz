@@ -20,15 +20,14 @@
  */
 
 #include "tuzz/slicer.hpp"
+#include "tuzz/chunk.hpp"
 
 namespace tuzz {
 
 struct all_slicer final : public tuzz::slicer {
-  virtual tuzz::chunks slice(const std::string& input) override;
+  virtual std::vector<tuzz::chunk> slice(const std::string& input) override;
 };
 
 }
-
-#include "../src/slicers/all_slicer.cpp"
 
 #endif

@@ -43,6 +43,4 @@ private:
 
 }
 
-#include "../src/finjectors/transform_finjector.cpp"
-
 #endif

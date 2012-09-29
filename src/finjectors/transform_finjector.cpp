@@ -17,9 +17,11 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using namespace tuzz;
+#include "tuzz/finjectors/transform_finjector.hpp"
 
 #include <algorithm>
+
+using namespace tuzz;
 
 transform_finjector::transform_finjector(std::function<char(char)> f)
   : f_(f) { }

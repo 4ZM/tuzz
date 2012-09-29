@@ -10,17 +10,17 @@ TEST_CASE( "tuzz/slicers/all_slicer/ctor", "Testing the constructor" ) {
 TEST_CASE( "tuzz/slicers/all_slicer/vanilla", "Testing the minimal slicer" ) {
   const std::string text("fubar");
   tuzz::all_slicer as;
-  tuzz::chunks chunks = as.slice(text);
+  std::vector<tuzz::chunk> chunks = as.slice(text);
 
   REQUIRE(chunks.size() == 1);
-  CHECK(std::string(chunks[0].first, chunks[0].second) == "fubar");
+  CHECK(std::string(chunks[0].cbegin(), chunks[0].cend()) == "fubar");
 }
 
 TEST_CASE( "tuzz/slicers/all_slicer/empty", "Empty input" ) {
   const std::string text;
   tuzz::all_slicer as;
-  tuzz::chunks chunks = as.slice(text);
+  std::vector<tuzz::chunk> chunks = as.slice(text);
 
   REQUIRE(chunks.size() == 1);
-  CHECK(std::string(chunks[0].first, chunks[0].second) == "");
+  CHECK(std::string(chunks[0].cbegin(), chunks[0].cend()) == "");
 }

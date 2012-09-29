@@ -17,10 +17,17 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using namespace tuzz;
+#include "tuzz/finjectors/repeat_finjector.hpp"
 
 #include <algorithm>
 #include <cctype>
+
+using namespace tuzz;
+
+tuzz::position::type tuzz::position::operator|(type t1, type t2) {
+  return static_cast<type>(static_cast<int>(t1) | static_cast<int>(t2));
+}
+
 
 repeat_finjector::repeat_finjector(size_t n, tuzz::position::type position)
   : repeat_finjector(n, position, false) { }

@@ -26,15 +26,15 @@
 namespace tuzz {
 
 namespace position {
+
 enum type {
   begining = 1<<0,
   middle   = 1<<1,
   end      = 1<<2,
 };
 
-type operator|(type t1, type t2) {
-  return static_cast<type>(static_cast<int>(t1) | static_cast<int>(t2));
-}
+type operator|(type t1, type t2);
+
 }
 
 /**
@@ -57,7 +57,5 @@ private:
 };
 
 }
-
-#include "../src/finjectors/repeat_finjector.cpp"
 
 #endif

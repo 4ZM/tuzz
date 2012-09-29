@@ -78,7 +78,7 @@ int main(int argc, const char* argv[]) {
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('-')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('+')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('_')));
-  chunks cnks = slicers[random_gen(slicers.size() - 1)]->slice(str);
+  std::vector<chunk> chunks = slicers[random_gen(slicers.size() - 1)]->slice(str);
 
   // Find chunks
   // auto sep_iters =
@@ -126,18 +126,17 @@ int main(int argc, const char* argv[]) {
   auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
 
   size_t finjector_i = random_gen(finjectors.size() - 1);
-  size_t fuzzed_chunk_i = random_gen(cnks.size() - 1);
+  size_t fuzzed_chunk_i = random_gen(chunks.size() - 1);
   std::string fuzzed_chunk =
-    finjectors[finjector_i]
-    ->inject(std::string(cnks[fuzzed_chunk_i].first, cnks[fuzzed_chunk_i].second));
+    finjectors[finjector_i]->inject(chunks[fuzzed_chunk_i].str());
 
-  std::cerr << "Chunk " << fuzzed_chunk_i << " / " << cnks.size() << ", finj " << finjector_i << std::endl;
-  for (size_t i = 0; i < cnks.size(); ++i) {
+  std::cerr << "Chunk " << fuzzed_chunk_i << " / " << chunks.size() << ", finj " << finjector_i << std::endl;
+  for (size_t i = 0; i < chunks.size(); ++i) {
     if (i == fuzzed_chunk_i) {
       std::copy(fuzzed_chunk.cbegin(), fuzzed_chunk.cend(), osbuf_it);
     }
     else {
-      std::copy(cnks[i].first, cnks[i].second, osbuf_it);
+      std::copy(chunks[i].cbegin(), chunks[i].cend(), osbuf_it);
 
     }
   }

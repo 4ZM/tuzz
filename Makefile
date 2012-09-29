@@ -31,14 +31,20 @@ TUZZ_SRCS  =                       \
   output_target.cpp                \
   cmdline_options.cpp              \
   prng.cpp                         \
+  chunk.cpp                        \
   slicer.cpp                       \
+  slicers/all_slicer.cpp           \
+  slicers/delimiter_slicer.cpp     \
+  finjector.cpp                    \
+  finjectors/transform_finjector.cpp  \
+  finjectors/repeat_finjector.cpp     
 
 TUZZ_OBJS1 = $(notdir $(TUZZ_SRCS))
 TUZZ_OBJS = $(TUZZ_OBJS1:.cpp=.o)
 
 .PHONY: clean all test run_tests
 
-all: tuzz test
+all: tuzz tests
 
 TEST_BINS =                               \
   test/test_numbered_string               \
@@ -88,16 +94,16 @@ test/test_prng: test/src/test_prng.cpp prng.o
 test/test_input_source: test/src/test_input_source.cpp input_source.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_transform_finjector: test/src/finjectors/test_transform_finjector.cpp include/tuzz/finjectors/transform_finjector.hpp
+test/test_transform_finjector: test/src/finjectors/test_transform_finjector.cpp transform_finjector.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp include/tuzz/finjectors/repeat_finjector.hpp
+test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp repeat_finjector.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp include/tuzz/slicers/delimiter_slicer.hpp
+test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp delimiter_slicer.o chunk.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_all_slicer: test/src/slicers/test_all_slicer.cpp
+test/test_all_slicer: test/src/slicers/test_all_slicer.cpp all_slicer.o chunk.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_output_target: test/src/test_output_target.cpp output_target.o numbered_string.o

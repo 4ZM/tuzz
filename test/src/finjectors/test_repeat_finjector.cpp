@@ -6,6 +6,8 @@
 #include <memory>
 #include <string.h>
 
+using namespace tuzz;
+
 TEST_CASE( "tuzz/finjectors/repeat_finjector/ctor", "Testing the constructor" ) {
   REQUIRE_NOTHROW(tuzz::repeat_finjector finj(1, position::begining));
 }

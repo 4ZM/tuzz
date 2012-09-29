@@ -1,5 +1,5 @@
-#ifndef DELIMITER_SLICER__HPP
-#define DELIMITER_SLICER__HPP
+#ifndef CHUNK__HPP
+#define CHUNK__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -19,20 +19,32 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/slicer.hpp"
-#include "tuzz/chunk.hpp"
+#include "tuzz/exception.hpp"
 
-#include <iterator>
-#include <vector>
+#include <string>
 
 namespace tuzz {
 
-struct delimiter_slicer final : public tuzz::slicer {
-  explicit delimiter_slicer(char delimiter);
-  virtual std::vector<tuzz::chunk> slice(const std::string& input) override;
+enum class chunk_type {
+  unclassified,
+  unknown,
+  binary,
+};
 
- private:
-  char delimiter_;
+struct chunk {
+  explicit chunk(std::string::const_iterator begin, std::string::const_iterator end);
+  explicit chunk(std::string::const_iterator begin, std::string::const_iterator end, tuzz::chunk_type type);
+
+  std::string::const_iterator cbegin() const;
+  std::string::const_iterator cend() const;
+  tuzz::chunk_type type() const;
+
+  std::string str() const;
+
+private:
+  std::string::const_iterator begin_;
+  std::string::const_iterator end_;
+  tuzz::chunk_type type_;
 };
 
 }

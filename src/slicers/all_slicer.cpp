@@ -17,10 +17,13 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "tuzz/slicers/all_slicer.hpp"
+
 #include <utility>
+#include <vector>
 
 using namespace tuzz;
 
-tuzz::chunks all_slicer::slice(const std::string& input) {
-  return chunks { std::make_pair(input.cbegin(), input.cend()) };
+std::vector<tuzz::chunk> all_slicer::slice(const std::string& input) {
+  return std::vector<chunk> { chunk(input.cbegin(), input.cend()) };
 }

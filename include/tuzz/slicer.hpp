@@ -20,16 +20,15 @@
  */
 
 #include "tuzz/exception.hpp"
+#include "tuzz/chunk.hpp"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace tuzz {
 
-using chunks = std::vector<std::pair<std::string::const_iterator, std::string::const_iterator>>;
-
 struct slicer {
-  virtual tuzz::chunks slice(const std::string& input) = 0;
+  virtual std::vector<tuzz::chunk> slice(const std::string& input) = 0;
   virtual ~slicer() = default;
 };
 

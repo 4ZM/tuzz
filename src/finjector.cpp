@@ -17,7 +17,7 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/slicer.hpp"
+#include "tuzz/finjector.hpp"
 
 using namespace tuzz;
 

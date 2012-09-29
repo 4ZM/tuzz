@@ -17,6 +17,9 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "tuzz/slicers/delimiter_slicer.hpp"
+#include "tuzz/chunk.hpp"
+
 #include <algorithm>
 
 using namespace tuzz;
@@ -24,8 +27,8 @@ using namespace tuzz;
 delimiter_slicer::delimiter_slicer(char delimiter)
   : delimiter_(delimiter) { }
 
-tuzz::chunks delimiter_slicer::slice(const std::string& input) {
-  chunks cs;
+std::vector<tuzz::chunk> delimiter_slicer::slice(const std::string& input) {
+  std::vector<chunk> cs;
 
   auto it = input.cbegin();
   do {
@@ -33,7 +36,7 @@ tuzz::chunks delimiter_slicer::slice(const std::string& input) {
     auto match = std::find(it, input.cend(), delimiter_);
 
     // And store the preceeding chunk
-    cs.push_back(std::make_pair(it, match));
+    cs.push_back(chunk(it, match));
 
     // If we found a delimiter, step past it
     if (match != input.cend()) {
@@ -41,7 +44,7 @@ tuzz::chunks delimiter_slicer::slice(const std::string& input) {
 
       // If the delimiter was the very last character, add a last empty chunk
       if (it == input.cend())
-        cs.push_back(std::make_pair(it, it));
+        cs.push_back(chunk(it, it));
     }
     else {
       // We are at the end, drop out of the loop
