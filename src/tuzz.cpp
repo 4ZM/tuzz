@@ -17,7 +17,6 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/tuzz.hpp"
 #include "tuzz/cmdline_options.hpp"
 #include "tuzz/input_source.hpp"
 #include "tuzz/output_target.hpp"
@@ -27,26 +26,14 @@
 #include "tuzz/slicers/all_slicer.hpp"
 #include "tuzz/slicers/delimiter_slicer.hpp"
 
+#include "tuzz/finjectors/transform_finjector.hpp"
+#include "tuzz/finjectors/repeat_finjector.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <iterator>
-
-template<typename InIt, typename OutIt>
-std::vector<tuzz::finjector_t<InIt, OutIt>> make_finjectors() {
-  using namespace tuzz;
-
-  return {
-    make_rep_n_finjector<InIt, OutIt>(1, position::begining),
-    make_rep_n_finjector<InIt, OutIt>(5, position::end),
-    make_rep_n_finjector<InIt, OutIt>
-      (3, position::begining | position::middle | position::end),
-    make_rep_n_char_finjector<InIt, OutIt>(1, '|', position::end, false),
-    make_transform_finjector<InIt, OutIt>(::toupper),
-    make_transform_finjector<InIt, OutIt>(::tolower),
-  };
-}
 
 int main(int argc, const char* argv[]) {
   using namespace tuzz;
@@ -77,29 +64,83 @@ int main(int argc, const char* argv[]) {
 
   // Create the slicers
   std::vector<std::unique_ptr<slicer>> slicers;
-  slicers.push_back(std::unique_ptr<slicer>(new all_slicer()));
+  // Not very usefull -> slicers.push_back(std::unique_ptr<slicer>(new all_slicer()));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(' ')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('\t')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(',')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(';')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('.')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(';')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(':')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('/')));
-  chunks c = slicers[random_gen(slicers.size() - 1)]->slice(str);
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('(')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(')')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('=')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('-')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('+')));
+  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('_')));
+  chunks cnks = slicers[random_gen(slicers.size() - 1)]->slice(str);
 
   // Find chunks
-  auto sep_iters =
-    find_sep<std::initializer_list<char>>(str.cbegin(), str.cend(),
-             { ',', ';', ':', '/', '(', ')', '-', '\n' });
+  // auto sep_iters =
+  //   find_sep<std::initializer_list<char>>(str.cbegin(), str.cend(),
+  //            { ',', ';', ':', '/', '(', ')', '-', '\n' });
 
   // Cretate the fault injectors to use
-  auto finjectors = make_finjectors<std::string::const_iterator,
-                                    std::ostreambuf_iterator<char>>();
+  // auto finjectors = make_finjectors<std::string::const_iterator,
+  //                                   std::ostreambuf_iterator<char>>();
 
-  size_t variant = random_gen(finjectors.size() - 1);
-  std::shared_ptr<std::ostream> stream_ptr = target.get_stream(variant);
+  std::vector<std::unique_ptr<finjector>> finjectors;
+  finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::toupper)));
+  finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::tolower)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::begining)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::begining)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::begining)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::begining)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::begining)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::end)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::end)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::end)));
+
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::begining, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::begining, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::begining, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::begining, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::begining, true)));
+
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::end, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::end, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::end, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::end, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::end, true)));
+
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::middle, true)));
+
+  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::begining | position::end, true)));
+
+
+  std::shared_ptr<std::ostream> stream_ptr = target.get_stream(0);
   auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
 
-  apply_finjector(str.cbegin(), str.cend(),
-                  osbuf_it,
-                  sep_iters, finjectors[variant]);
+  size_t finjector_i = random_gen(finjectors.size() - 1);
+  size_t fuzzed_chunk_i = random_gen(cnks.size() - 1);
+  std::string fuzzed_chunk =
+    finjectors[finjector_i]
+    ->inject(std::string(cnks[fuzzed_chunk_i].first, cnks[fuzzed_chunk_i].second));
+
+  std::cerr << "Chunk " << fuzzed_chunk_i << " / " << cnks.size() << ", finj " << finjector_i << std::endl;
+  for (size_t i = 0; i < cnks.size(); ++i) {
+    if (i == fuzzed_chunk_i) {
+      std::copy(fuzzed_chunk.cbegin(), fuzzed_chunk.cend(), osbuf_it);
+    }
+    else {
+      std::copy(cnks[i].first, cnks[i].second, osbuf_it);
+
+    }
+  }
 
   return 0;
 }
