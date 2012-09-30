@@ -17,7 +17,6 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/slicers/delimiter_slicer.hpp"
 #include "tuzz/slicers/predicate_slicer.hpp"
 #include "tuzz/chunk.hpp"
 
@@ -25,9 +24,33 @@
 
 using namespace tuzz;
 
-delimiter_slicer::delimiter_slicer(char delimiter)
-  : delimiter_(delimiter) { }
+predicate_slicer::predicate_slicer(std::function<bool(char)> predicate)
+  : predicate_(predicate) { }
 
-std::vector<tuzz::chunk> delimiter_slicer::slice(const std::string& input) {
-  return predicate_slicer([=] (char c) { return c == delimiter_; }).slice(input);
+std::vector<tuzz::chunk> predicate_slicer::slice(const std::string& input) {
+  std::vector<chunk> cs;
+
+  auto it = input.cbegin();
+  do {
+    // Find the next match (if any)
+    auto match = std::find_if(it, input.cend(), predicate_);
+
+    // And store the preceeding chunk
+    cs.push_back(chunk(it, match));
+
+    // If there was a matching char, step past it
+    if (match != input.cend()) {
+      it = ++match;
+
+      // If the match was the very last character, add a last empty chunk
+      if (it == input.cend())
+        cs.push_back(chunk(it, it));
+    }
+    else {
+      // We are at the end, drop out of the loop
+      it = match;
+    }
+  } while(it != input.cend());
+
+  return cs;
 }

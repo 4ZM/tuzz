@@ -1,3 +1,5 @@
+#ifndef PREDICATE_SLICER__HPP
+#define PREDICATE_SLICER__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -17,17 +19,25 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/slicers/delimiter_slicer.hpp"
-#include "tuzz/slicers/predicate_slicer.hpp"
+#include "tuzz/slicer.hpp"
 #include "tuzz/chunk.hpp"
 
-#include <algorithm>
+#include <functional>
+#include <vector>
 
-using namespace tuzz;
+namespace tuzz {
 
-delimiter_slicer::delimiter_slicer(char delimiter)
-  : delimiter_(delimiter) { }
+struct predicate_slicer final : public tuzz::slicer {
+  explicit predicate_slicer(std::function<bool(char)> predicate);
+  virtual std::vector<tuzz::chunk> slice(const std::string& input) override;
 
-std::vector<tuzz::chunk> delimiter_slicer::slice(const std::string& input) {
-  return predicate_slicer([=] (char c) { return c == delimiter_; }).slice(input);
+  // Hack for GCC Bug 53613, remove dtor when fixed
+  virtual ~predicate_slicer() noexcept {};
+
+ private:
+  std::function<bool(char)> predicate_;
+};
+
 }
+
+#endif
