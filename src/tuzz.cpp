@@ -80,47 +80,17 @@ int main(int argc, const char* argv[]) {
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('_')));
   std::vector<chunk> chunks = slicers[random_gen(slicers.size() - 1)]->slice(str);
 
-  // Find chunks
-  // auto sep_iters =
-  //   find_sep<std::initializer_list<char>>(str.cbegin(), str.cend(),
-  //            { ',', ';', ':', '/', '(', ')', '-', '\n' });
-
-  // Cretate the fault injectors to use
-  // auto finjectors = make_finjectors<std::string::const_iterator,
-  //                                   std::ostreambuf_iterator<char>>();
-
   std::vector<std::unique_ptr<finjector>> finjectors;
+  for (auto n : { 1, 2, 3, 15, 16, 31, 32, 127, 128, 255, 256, 1023, 1024, 1025, 4096, 65536}) {
+    finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::begining)));
+    finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::end)));
+    finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::middle)));
+    finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::begining, true)));
+    finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::end, true)));
+    finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::middle, true)));
+  }
   finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::toupper)));
   finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::tolower)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::begining)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::begining)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::begining)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::begining)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::begining)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::end)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::end)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::end)));
-
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::begining, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::begining, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::begining, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::begining, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::begining, true)));
-
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::end, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::end, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::end, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::end, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::end, true)));
-
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::middle, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(2, position::middle, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(3, position::middle, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(16, position::middle, true)));
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(128, position::middle, true)));
-
-  finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(1, position::begining | position::end, true)));
-
 
   std::shared_ptr<std::ostream> stream_ptr = target.get_stream(0);
   auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
@@ -130,7 +100,6 @@ int main(int argc, const char* argv[]) {
   std::string fuzzed_chunk =
     finjectors[finjector_i]->inject(chunks[fuzzed_chunk_i].str());
 
-  std::cerr << "Chunk " << fuzzed_chunk_i << " / " << chunks.size() << ", finj " << finjector_i << std::endl;
   for (size_t i = 0; i < chunks.size(); ++i) {
     if (i == fuzzed_chunk_i) {
       std::copy(fuzzed_chunk.cbegin(), fuzzed_chunk.cend(), osbuf_it);
