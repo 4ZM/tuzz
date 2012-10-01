@@ -22,6 +22,7 @@
 #include "tuzz/output_target.hpp"
 #include "tuzz/numbered_string.hpp"
 #include "tuzz/prng.hpp"
+#include "tuzz/magic_numbers.hpp"
 
 #include "tuzz/slicers/all_slicer.hpp"
 #include "tuzz/slicers/delimiter_slicer.hpp"
@@ -80,8 +81,11 @@ int main(int argc, const char* argv[]) {
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('_')));
   std::vector<chunk> chunks = slicers[random_gen(slicers.size() - 1)]->slice(str);
 
+  magic_numbers num(4);
+  std::vector<unsigned int> field_lengths = num.field_lengths();
+
   std::vector<std::unique_ptr<finjector>> finjectors;
-  for (auto n : { 1, 2, 3, 15, 16, 31, 32, 127, 128, 255, 256, 1023, 1024, 1025, 4096, 65536}) {
+  for (auto n : field_lengths) {
     finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::begining)));
     finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::end)));
     finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::middle)));

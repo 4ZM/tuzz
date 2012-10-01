@@ -33,6 +33,7 @@ TUZZ_SRCS  =                       \
   prng.cpp                         \
   chunk.cpp                        \
   slicer.cpp                       \
+  magic_numbers.cpp                \
   slicers/all_slicer.cpp           \
   slicers/predicate_slicer.cpp     \
   slicers/delimiter_slicer.cpp     \
