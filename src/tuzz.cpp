@@ -54,10 +54,6 @@ int main(int argc, const char* argv[]) {
     ? output_target()
     : output_target(numbered_string(opt.get_output_specification()));
 
-  prng random_gen = opt.has_random_seed()
-    ? prng(opt.get_random_seed())
-    : prng();
-
   // Read data from the input
   using sbuf_it_t = std::istreambuf_iterator<char>;
   std::shared_ptr<std::istream> in_stream = source.get_stream();
@@ -79,7 +75,6 @@ int main(int argc, const char* argv[]) {
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('-')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('+')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('_')));
-  std::vector<chunk> chunks = slicers[random_gen(slicers.size() - 1)]->slice(str);
 
   magic_numbers num(4);
   std::vector<unsigned int> field_lengths = num.field_lengths();
@@ -96,23 +91,36 @@ int main(int argc, const char* argv[]) {
   finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::toupper)));
   finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::tolower)));
 
-  std::shared_ptr<std::ostream> stream_ptr = target.get_stream(0);
-  auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
+  bool loop_forever = !opt.has_count();
+  size_t iteration = opt.has_count() ? opt.get_count() : 1;
+  while(loop_forever || iteration > 0) {
 
-  size_t finjector_i = random_gen(finjectors.size() - 1);
-  size_t fuzzed_chunk_i = random_gen(chunks.size() - 1);
-  std::string fuzzed_chunk =
-    finjectors[finjector_i]->inject(chunks[fuzzed_chunk_i].str());
+    prng random_gen = opt.has_random_seed()
+      ? prng(opt.get_random_seed())
+      : prng();
 
-  for (size_t i = 0; i < chunks.size(); ++i) {
-    if (i == fuzzed_chunk_i) {
-      std::copy(fuzzed_chunk.cbegin(), fuzzed_chunk.cend(), osbuf_it);
+    std::vector<chunk> chunks = slicers[random_gen(slicers.size() - 1)]->slice(str);
+    
+    std::shared_ptr<std::ostream> stream_ptr = target.get_stream(random_gen.get_seed());
+    auto osbuf_it = std::ostreambuf_iterator<char>(*stream_ptr);
+    
+    size_t finjector_i = random_gen(finjectors.size() - 1);
+    size_t fuzzed_chunk_i = random_gen(chunks.size() - 1);
+    std::string fuzzed_chunk =
+      finjectors[finjector_i]->inject(chunks[fuzzed_chunk_i].str());
+    
+    for (size_t i = 0; i < chunks.size(); ++i) {
+      if (i == fuzzed_chunk_i) {
+        std::copy(fuzzed_chunk.cbegin(), fuzzed_chunk.cend(), osbuf_it);
+      }
+      else {
+        std::copy(chunks[i].cbegin(), chunks[i].cend(), osbuf_it);
+        
+      }
     }
-    else {
-      std::copy(chunks[i].cbegin(), chunks[i].cend(), osbuf_it);
 
-    }
+    --iteration;
   }
-
+  
   return 0;
 }

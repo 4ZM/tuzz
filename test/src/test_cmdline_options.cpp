@@ -41,7 +41,7 @@ TEST_CASE( "tuzz/utility/options/help", "Help request" ) {
 }
 
 TEST_CASE( "tuzz/utility/options/version", "Version info request" ) {
-	SECTION("-v", "Using short hand option") {
+  SECTION("-v", "Using short hand option") {
     std::stringstream ss;
     const char* argv[] = { "prog_name", "-v", nullptr };
     REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
@@ -249,6 +249,43 @@ TEST_CASE( "tuzz/utility/options/seed", "Random seed" ) {
   SECTION("--seed fubar", "Invalid use of the --seed option, bad value") {
     std::stringstream ss;
     const char* argv[] = { "prog_name", "--seed", "fubar", nullptr };
+    REQUIRE_THROWS(tuzz::cmdline_options(3, argv, ss));
+  }
+}
+
+
+TEST_CASE( "tuzz/utility/options/count", "Turns" ) {
+  SECTION("--count n", "Valid use of the --count option") {
+    std::stringstream ss;
+    const char* argv[] = { "prog_name", "--count", "1337", nullptr };
+    REQUIRE_NOTHROW(tuzz::cmdline_options(3, argv, ss));
+    REQUIRE(ss.str().empty());
+
+    {
+      tuzz::cmdline_options co(3, argv, ss);
+      CHECK(co.has_count());
+      CHECK(co.get_count() == 1337);
+      CHECK_FALSE(co.termination_requested());
+    }
+  }
+
+  SECTION("--count", "Invalid use of the --count option, missing value") {
+    std::stringstream ss;
+    const char* argv[] = { "prog_name", "--count", nullptr };
+    REQUIRE_NOTHROW(tuzz::cmdline_options(2, argv, ss));
+    REQUIRE_FALSE(ss.str().empty());
+
+    {
+      tuzz::cmdline_options co(2, argv, ss);
+      CHECK_FALSE(co.has_count());
+      REQUIRE_THROWS_AS(co.get_count(), tuzz::cmdline_options_error);
+      CHECK(co.termination_requested());
+    }
+  }
+
+  SECTION("--count fubar", "Invalid use of the --count option, bad value") {
+    std::stringstream ss;
+    const char* argv[] = { "prog_name", "--count", "fubar", nullptr };
     REQUIRE_THROWS(tuzz::cmdline_options(3, argv, ss));
   }
 }

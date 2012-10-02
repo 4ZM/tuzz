@@ -35,7 +35,10 @@ struct prng {
   // Get the next random number from the range [0,max]
   unsigned int operator()(unsigned int upper_bound);
 
+  unsigned int get_seed() const;
+  
 private:
+  unsigned int seed_;
   std::mt19937 generator_;
 };
 

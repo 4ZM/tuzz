@@ -146,12 +146,26 @@ bool cmdline_options::has_random_seed() const {
   return impl_->vm.count("seed") > 0;
 }
 
+unsigned int cmdline_options::get_count() const {
+  if (impl_->vm.count("count")) {
+    return impl_->vm["count"].as<unsigned int>();
+  }
+
+  throw cmdline_options_error("Count requested, but no such option present");
+}
+
+bool cmdline_options::has_count() const {
+  return impl_->vm.count("count") > 0;
+}
+
+
 boost::program_options::options_description create_visible_options_() {
   po::options_description visible("Allowed options");
   visible.add_options()
     ("help,h", "produce help message")
     ("version,v", "print version string")
     ("output,o", po::value<std::string>()->default_value("-"), "output file pattern (%dn) or -")
+    ("count,c", po::value<unsigned int>(), "number of runns")
     ("seed", po::value<unsigned int>(), "random seed")
     ;
 

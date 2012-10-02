@@ -29,10 +29,14 @@ prng_error::prng_error()
 prng_error::prng_error(const char* msg)
   : tuzz_error(msg) { }
 
-prng::prng() : generator_(std::mt19937(std::random_device()())) { }
+prng::prng() : seed_(std::mt19937(std::random_device()())()), generator_(seed_) { }
 
-prng::prng(unsigned int seed) : generator_(seed) { }
+prng::prng(unsigned int seed) : seed_(seed), generator_(seed) { }
 
 unsigned int prng::operator()(unsigned int upper_bound) {
   return std::uniform_int_distribution<unsigned int>(0, upper_bound)(generator_);
+}
+
+unsigned int prng::get_seed() const {
+  return seed_;
 }

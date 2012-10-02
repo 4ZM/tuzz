@@ -51,6 +51,9 @@ struct cmdline_options {
   bool has_random_seed() const;
   unsigned int get_random_seed() const;
 
+  bool has_count() const;
+  unsigned int get_count() const;
+
 private:
   struct impl;
   std::unique_ptr<impl> impl_;
