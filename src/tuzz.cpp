@@ -30,6 +30,7 @@
 
 #include "tuzz/finjectors/transform_finjector.hpp"
 #include "tuzz/finjectors/repeat_finjector.hpp"
+#include "tuzz/finjectors/insert_finjector.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -68,11 +69,11 @@ int main(int argc, const char* argv[]) {
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(';')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('/')));
 
-	// Some genereal symbols that might be used to delimit stuff
-	slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer(" \t\n\r")));
-	slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("!#$%^*+=,-./\\;:?@`~_^|")));
+  // Some genereal symbols that might be used to delimit stuff
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer(" \t\n\r")));
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("!#$%^*+=,-./\\;:?@`~_|")));
 
-	// Find bracketed regions
+  // Find bracketed regions
   slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("()")));
   slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("<>")));
   slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("{}")));
@@ -91,6 +92,31 @@ int main(int argc, const char* argv[]) {
     finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::end, true)));
     finjectors.push_back(std::unique_ptr<finjector>(new repeat_finjector(n, position::middle, true)));
   }
+
+  // Some format string fuzzing
+  finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector("%n", 1, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector("%n", 10, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector("%n", 100, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector("%s", 1, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector("%s", 10, position::middle, true)));
+  finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector("%s", 100, position::middle, true)));
+
+  // Some random inserts of symbols
+  for (auto s : { "!", "#", "$", "%", "^", "*", "+", "=", ",", "-", ".",
+        "/", "\\", ";", ":", "?", "@", "`", "~", "_", "|" }) {
+    finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector(s, 1, position::middle)));
+    finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector(s, 2, position::middle)));
+    finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector(s, 100, position::middle)));
+  }
+  
+  // Insert spaces
+  for (auto n : { 1, 0xffff, 0xffffff}) {
+    finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector(" ", n, position::begining)));
+    finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector(" ", n, position::middle)));
+    finjectors.push_back(std::unique_ptr<finjector>(new insert_finjector(" ", n, position::end)));
+  }
+
+  // Upper / lower case
   finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::toupper)));
   finjectors.push_back(std::unique_ptr<finjector>(new transform_finjector(::tolower)));
 

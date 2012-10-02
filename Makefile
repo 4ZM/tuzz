@@ -41,6 +41,7 @@ TUZZ_SRCS  =                       \
   slicers/any_of_slicer.cpp        \
   finjector.cpp                    \
   finjectors/transform_finjector.cpp  \
+  finjectors/insert_finjector.cpp     \
   finjectors/repeat_finjector.cpp     
 
 TUZZ_OBJS1 = $(notdir $(TUZZ_SRCS))
@@ -58,6 +59,7 @@ TEST_BINS =                               \
   test/test_output_target                 \
   test/test_transform_finjector           \
   test/test_repeat_finjector              \
+  test/test_insert_finjector              \
   test/test_predicate_slicer              \
   test/test_delimiter_slicer              \
   test/test_any_of_slicer                 \
@@ -104,6 +106,9 @@ test/test_transform_finjector: test/src/finjectors/test_transform_finjector.cpp 
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp repeat_finjector.o position.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_insert_finjector: test/src/finjectors/test_insert_finjector.cpp insert_finjector.o position.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp delimiter_slicer.o chunk.o predicate_slicer.o
