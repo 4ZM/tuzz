@@ -34,6 +34,7 @@ TUZZ_SRCS  =                       \
   chunk.cpp                        \
   slicer.cpp                       \
   magic_numbers.cpp                \
+  position.cpp                     \
   slicers/all_slicer.cpp           \
   slicers/predicate_slicer.cpp     \
   slicers/delimiter_slicer.cpp     \
@@ -102,7 +103,7 @@ test/test_input_source: test/src/test_input_source.cpp input_source.o
 test/test_transform_finjector: test/src/finjectors/test_transform_finjector.cpp transform_finjector.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp repeat_finjector.o
+test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp repeat_finjector.o position.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp delimiter_slicer.o chunk.o predicate_slicer.o
