@@ -1,5 +1,3 @@
-#ifndef DELIMITER_SLICER__HPP
-#define DELIMITER_SLICER__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -19,21 +17,22 @@
  * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tuzz/slicer.hpp"
+#include "tuzz/slicers/predicate_slicer.hpp"
+#include "tuzz/slicers/any_of_slicer.hpp"
 #include "tuzz/chunk.hpp"
 
-#include <vector>
+#include <algorithm>
+#include <utility>
 
-namespace tuzz {
+using namespace tuzz;
 
-struct delimiter_slicer final : public tuzz::slicer {
-  explicit delimiter_slicer(char delimiter);
-  virtual std::vector<tuzz::chunk> slice(const std::string& input) override;
+any_of_slicer::any_of_slicer(const std::string& delimiters)
+  : delimiters_(delimiters) { }
 
- private:
-  char delimiter_;
-};
+any_of_slicer::any_of_slicer(std::string&& delimiters)
+  : delimiters_(delimiters) { }
 
+std::vector<tuzz::chunk> any_of_slicer::slice(const std::string& input) {
+  return predicate_slicer([=] (char c) { return delimiters_.find_first_of(c) != std::string::npos; })
+    .slice(input);
 }
-
-#endif

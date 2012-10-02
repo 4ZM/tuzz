@@ -37,6 +37,7 @@ TUZZ_SRCS  =                       \
   slicers/all_slicer.cpp           \
   slicers/predicate_slicer.cpp     \
   slicers/delimiter_slicer.cpp     \
+  slicers/any_of_slicer.cpp        \
   finjector.cpp                    \
   finjectors/transform_finjector.cpp  \
   finjectors/repeat_finjector.cpp     
@@ -58,6 +59,7 @@ TEST_BINS =                               \
   test/test_repeat_finjector              \
   test/test_predicate_slicer              \
   test/test_delimiter_slicer              \
+  test/test_any_of_slicer                 \
   test/test_all_slicer
 
 tests: ${TEST_BINS}
@@ -104,6 +106,9 @@ test/test_repeat_finjector: test/src/finjectors/test_repeat_finjector.cpp repeat
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_delimiter_slicer: test/src/slicers/test_delimiter_slicer.cpp delimiter_slicer.o chunk.o predicate_slicer.o
+	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
+
+test/test_any_of_slicer: test/src/slicers/test_any_of_slicer.cpp any_of_slicer.o chunk.o predicate_slicer.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
 test/test_predicate_slicer: test/src/slicers/test_predicate_slicer.cpp predicate_slicer.o chunk.o

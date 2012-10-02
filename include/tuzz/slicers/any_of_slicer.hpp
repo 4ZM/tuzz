@@ -1,5 +1,5 @@
-#ifndef DELIMITER_SLICER__HPP
-#define DELIMITER_SLICER__HPP
+#ifndef ANY_OF_SLICER__HPP
+#define ANY_OF_SLICER__HPP
 /**
  * Copyright (C) 2012 Anders Sundman <anders@4zm.org>
  *
@@ -23,15 +23,17 @@
 #include "tuzz/chunk.hpp"
 
 #include <vector>
+#include <string>
 
 namespace tuzz {
 
-struct delimiter_slicer final : public tuzz::slicer {
-  explicit delimiter_slicer(char delimiter);
+struct any_of_slicer final : public tuzz::slicer {
+  explicit any_of_slicer(const std::string& delimiters);
+  explicit any_of_slicer(std::string&& delimiters);
   virtual std::vector<tuzz::chunk> slice(const std::string& input) override;
 
  private:
-  char delimiter_;
+  std::string delimiters_;
 };
 
 }
