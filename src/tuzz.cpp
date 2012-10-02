@@ -26,6 +26,7 @@
 
 #include "tuzz/slicers/all_slicer.hpp"
 #include "tuzz/slicers/delimiter_slicer.hpp"
+#include "tuzz/slicers/any_of_slicer.hpp"
 
 #include "tuzz/finjectors/transform_finjector.hpp"
 #include "tuzz/finjectors/repeat_finjector.hpp"
@@ -61,20 +62,22 @@ int main(int argc, const char* argv[]) {
 
   // Create the slicers
   std::vector<std::unique_ptr<slicer>> slicers;
-  // Not very usefull -> slicers.push_back(std::unique_ptr<slicer>(new all_slicer()));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(' ')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('\t')));
+
+  // Some symbols that can make up lists etc..
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(',')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('.')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(';')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(':')));
   slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('/')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('(')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer(')')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('=')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('-')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('+')));
-  slicers.push_back(std::unique_ptr<slicer>(new delimiter_slicer('_')));
+
+	// Some genereal symbols that might be used to delimit stuff
+	slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer(" \t\n\r")));
+	slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("!#$%^*+=,-./\\;:?@`~_^|")));
+
+	// Find bracketed regions
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("()")));
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("<>")));
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("{}")));
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("[]")));
+  slicers.push_back(std::unique_ptr<slicer>(new any_of_slicer("'\"")));
 
   magic_numbers num(4);
   std::vector<unsigned int> field_lengths = num.field_lengths();
