@@ -42,14 +42,14 @@ TUZZ_SRCS  =                       \
   finjector.cpp                    \
   finjectors/transform_finjector.cpp  \
   finjectors/insert_finjector.cpp     \
-  finjectors/repeat_finjector.cpp     
+  finjectors/repeat_finjector.cpp
 
 TUZZ_OBJS1 = $(notdir $(TUZZ_SRCS))
 TUZZ_OBJS = $(TUZZ_OBJS1:.cpp=.o)
 
 .PHONY: clean all test run_tests
 
-all: tuzz tests
+all: tuzz tests targets
 
 TEST_BINS =                               \
   test/test_numbered_string               \
@@ -66,6 +66,12 @@ TEST_BINS =                               \
   test/test_all_slicer
 
 tests: ${TEST_BINS}
+
+TARGET_BINS =                              \
+  test/targets/local_overflow              \
+  test/targets/remote_overflow
+
+targets: ${TARGET_BINS}
 
 run_tests: tests
 	$(foreach var,$(TEST_BINS),$(var);)
@@ -87,6 +93,12 @@ tuzz: src/tuzz.cpp ${TUZZ_OBJS}
 
 %.o : src/finjectors/%.cpp Makefile
 	${GCC} ${CFLAGS} -c $<
+
+targets/local_overflow: test/targets/local_overflow.cpp
+	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
+
+targets/remote_overflow: test/targets/remote_overflow.cpp
+	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
 
 # Testcases - need a bit of special care since
 # dependencies are hard to figure out automatically
