@@ -1,4 +1,7 @@
 *~
 *.bak
 .depends
-
+*.o
+tuzz
+test/test_runner
+test/targets/
