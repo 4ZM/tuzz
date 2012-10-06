@@ -1,4 +1,3 @@
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #include "tuzz/finjectors/repeat_finjector.hpp"
@@ -12,7 +11,7 @@ TEST_CASE( "tuzz/finjectors/repeat_finjector/ctor", "Testing the constructor" ) 
   REQUIRE_NOTHROW(tuzz::repeat_finjector finj(1, position::begining));
 }
 
-TEST_CASE( "tuzz/finjectors/single_finjectors/once", "One character repetition" ) {
+TEST_CASE( "tuzz/finjectors/repeat_finjectors/once", "One character repetition" ) {
 
   SECTION("first", "Repeat first position") {
     const std::string text("abc");
@@ -40,7 +39,7 @@ TEST_CASE( "tuzz/finjectors/single_finjectors/once", "One character repetition" 
   }
 }
 
-TEST_CASE( "tuzz/finjectors/single_finjectors/empty", "Empty input" ) {
+TEST_CASE( "tuzz/finjectors/repeat_finjectors/empty", "Empty input" ) {
 
   SECTION("first", "Repeat first position") {
     const std::string text("");
@@ -68,7 +67,7 @@ TEST_CASE( "tuzz/finjectors/single_finjectors/empty", "Empty input" ) {
   }
 }
 
-TEST_CASE( "tuzz/finjectors/single_finjectors/poscombo", "Combining positions" ) {
+TEST_CASE( "tuzz/finjectors/repeat_finjectors/poscombo", "Combining positions" ) {
 
   SECTION("first", "Repeat first and last position") {
     const std::string text("abc");
@@ -96,7 +95,7 @@ TEST_CASE( "tuzz/finjectors/single_finjectors/poscombo", "Combining positions" )
   }
 }
 
-TEST_CASE( "tuzz/finjectors/single_finjectors/wspadding", "Input contains white spece" ) {
+TEST_CASE( "tuzz/finjectors/repeat_finjectors/wspadding", "Input contains white spece" ) {
 
   SECTION("first, no strip", "Repeat first position without removing the whitespace") {
     const std::string text(" \tfubar");
