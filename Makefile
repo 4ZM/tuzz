@@ -138,6 +138,9 @@ test/test_all_slicer: test/src/slicers/test_all_slicer.cpp all_slicer.o chunk.o
 test/test_output_target: test/src/test_output_target.cpp output_target.o numbered_string.o
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
+harness: src/harness.cpp
+	gcc -o $@ $^ --std=c++11 -lstdc++
+
 # makedepend section - set up include dependencies
 DEPFILE		= .depends
 DEPTOKEN	= '\# MAKEDEPENDS'
