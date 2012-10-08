@@ -43,6 +43,23 @@ void test(int result, const char* msg) {
   if (result < 0) fail(msg);
 }
 
+int is_signal_terminal(int sig) {
+  switch(sig) {
+  case SIGILL  :
+  case SIGABRT :
+  case SIGFPE  :
+  case SIGKILL :
+  case SIGSEGV :
+  case SIGPIPE :
+  case SIGBUS  :
+  case SIGSYS  :
+  case SIGXCPU :
+  case SIGXFSZ :
+    return 1;
+  }
+  return 0;
+}
+
 int main(int argc, char* argv[]) {
   static const char* argsep = "--";
   const int copy_env = 1;
@@ -115,20 +132,9 @@ int main(int argc, char* argv[]) {
           test(res, "Continuing after trap signal");
         }
         else {
-          printf("Child received signal %d\n", sig);
-
-          // Any of the following signals? Record and terminate.
-          switch(sig) {
-          case SIGILL  :
-          case SIGABRT :
-          case SIGFPE  :
-          case SIGKILL :
-          case SIGSEGV :
-          case SIGPIPE :
-          case SIGBUS  :
-          case SIGSYS  :
-          case SIGXCPU :
-          case SIGXFSZ :
+          printf("Child received signal %d: ", sig);
+          if (is_signal_terminal(sig)) {
+            printf("Terminating child\n", sig);
 
             // Do some logging here
 
@@ -141,6 +147,8 @@ int main(int argc, char* argv[]) {
 
             break; // Exit proc mon loop
           }
+
+          printf("Non-terminal, passing on to child\n", sig);
 
           // Some other signal, pass on to child
           res = ptrace(PTRACE_CONT, cpid, NULL, sig);
