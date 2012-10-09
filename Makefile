@@ -67,7 +67,7 @@ TEST_OBJS = $(TEST_OBJS1:.cpp=.o)
 
 .PHONY: clean all test run_tests
 
-all: tuzz test/test_runner targets
+all: tuzz test/test_runner targets harness
 
 TARGET_BINS =                              \
   test/targets/local_overflow              \
