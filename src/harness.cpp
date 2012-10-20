@@ -10,153 +10,222 @@
  *
  * tuzz is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with tuzz.  If not, see <http://www.gnu.org/licenses/>.
+ * along with tuzz.	 If not, see <http://www.gnu.org/licenses/>.
  *
  * Implementation is heavily influenced by SpikeFile : util.c (GPLv2)
  * Copyright (C) 2005 Adam Greene <agreene@idefense.com>
  */
 
+#include <tuzz/harness.hpp>
+
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 #include <string.h>
+#include <errno.h>
+
+#include <vector>
+#include <string>
+#include <functional>
 
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
 
-void fail(const char* msg) {
-  if (errno)
-    printf("%s : %s\n", msg, strerror(errno));
-  else
-    printf("%s\n", msg);
+using namespace tuzz;
 
-  exit(EXIT_FAILURE);
+void execute_application();
+void monitor(int cpid);
+
+bool is_signal_terminal(int sig);
+char** alloc_args(const std::vector<std::string>& argv);
+
+int checked_call(std::function<int(void)> f, const std::string& msg);
+void test(int result, const std::string& msg);
+void fail(const std::string& msg);
+
+harness_error::harness_error()
+	: tuzz_error("Process harness error") { }
+
+harness_error::harness_error(const char* msg)
+	: tuzz_error(msg) { }
+
+harness_error::harness_error(const std::string& msg)
+	: tuzz_error(msg.c_str()) { }
+
+
+harness::harness(const std::string& program,
+											 const std::vector<std::string>& args,
+											 const std::vector<std::string>& env)
+	: program_(program), args_(args), env_(env), inherit_env_(true) {
 }
-void test(int result, const char* msg) {
-  if (result < 0) fail(msg);
+
+harness::harness(const std::string& program,
+											 const std::vector<std::string>& args)
+	: program_(program), args_(args), inherit_env_(false) {
 }
 
-int is_signal_terminal(int sig) {
-  switch(sig) {
-  case SIGILL  :
-  case SIGABRT :
-  case SIGFPE  :
-  case SIGKILL :
-  case SIGSEGV :
-  case SIGPIPE :
-  case SIGBUS  :
-  case SIGSYS  :
-  case SIGXCPU :
-  case SIGXFSZ :
-    return 1;
-  }
-  return 0;
+void tuzz::harness::start() {
+
+	// Create child process
+	pid_t cpid = checked_call([] () { return fork(); }, "Forking");
+
+	if (cpid == 0) {
+		// This branch executes in the new process
+		execute_application_();
+	}
+	else {
+		// This executes in the parent process
+		monitor(cpid);
+	}
 }
 
-int main(int argc, char* argv[]) {
-  static const char* argsep = "--";
-  const int copy_env = 1;
+void tuzz::harness::abort() { }
 
-  // Find arg separator
-  const char* const* cargv = NULL;
-  for (int i = 1; i < argc - 1; ++i) {
-    if (strcmp(argsep, argv[i]) == 0) {
-      cargv = &argv[i + 1]; // Point to arg after sep
-      break;
-    }
-  }
+void tuzz::harness::execute_application_()
+{
+	// Build process arguments
+	//
+	// Note:
+	// This will allocate memory on the heap that is never explicitly
+	// released.	It will however be cleaned up by the OS when the
+	// process is terminated.
+	char** cargs = alloc_args(args_);
+	char** cenv = environ; // Copy parent process env
 
-  // Check args
-  if (cargv == NULL) {
-    printf("Usage: harness -opt1 -opt2 -- target --target-arg\n");
-    fail("Argument parse error");
-  }
+	// Don't use parent env, set explicitly
+	if (!inherit_env_)
+		cenv = alloc_args(env_);
 
-  // Create child process
-  pid_t cpid = fork();
-  test(cpid, "Forking");
+	// Wait for the parent process to attach
+	// BUG: --> Add condition variable to prevent race of attach before this call
+	checked_call([] { return ptrace(PTRACE_TRACEME, 0, NULL, NULL); }, "Waiting for trace");
 
-  if (cpid == 0) {
-    // In child process
+	// Launch the application in this process
+	execve(program_.c_str(), (char* const*)cargs, (char* const*)cenv);
 
-    // Wait for the parent to get ready
-    long res = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-    test(res, "Waiting for trace");
+	// execve never returns on success
+	fail("Executing child program");
+}
 
-    // Execute the child program
-    const char* const null_env[] = { NULL };
-    execve(cargv[0], (char* const*)cargv, copy_env ? environ : (char* const*)null_env);
 
-    // execve never returns on success
-    fail("Executing child program");
+void monitor(int cpid) {
+	int status;
 
-    // TODO: Should we use PTRACE_O_TRACEFORK to trace recursive process creation?
-  }
-  else {
-    // In parent process
+	for(;;) { // Process monitoring loop
 
-    int status;
-    for(;;) { // Process monitoring loop
+		// Wait for child to teminate or get some signal.
+		//
+		// Note:
+		// there is no race with the TRACEME call since it doesn't
+		// matter if that occurs before this call, in which case it is
+		// not processed, or if it occurs after, in which case it is
+		// processed but ignored.
+		checked_call([&] { return waitpid(cpid, &status, 0); },
+								 "Waiting for child process");
 
-      // Wait for child to teminate or get some signal
-      int wpid = waitpid(cpid, &status, 0);
-      test(wpid, "Waiting for child process");
+		// TODO: Refactor code below to process_event function()
 
-      if (WIFEXITED(status)) {
-        // Child terminated normally
-        int ret = WEXITSTATUS(status); // arg to exit() or mains return
-        printf("Child terminated normally with status: %d\n", ret);
-        break; // Exit proc mon loop
-      }
-      else if (WIFSIGNALED(status)) {
-        // Child terminated by a signal
-        int sig = WTERMSIG(status);
-        printf("Child terminated by signal: %d\n", sig);
-        break; // Exit proc mon loop
-      }
-      else if (WIFSTOPPED(status)) {
-        // Child received signal
+		if (WIFEXITED(status)) {
+			// Child terminated normally
 
-        int res = 0;
-        int sig = WSTOPSIG (status);
-        if (sig == SIGTRAP) {
-          printf("Child trapped, continuing...\n");
-          res = ptrace(PTRACE_CONT, cpid, NULL, 0);
-          test(res, "Continuing after trap signal");
-        }
-        else {
-          printf("Child received signal %d: ", sig);
-          if (is_signal_terminal(sig)) {
-            printf("Terminating child\n", sig);
+			// int ret = WEXITSTATUS(status); // arg to exit() or mains return
+			// TODO ==> TO LOG : printf("Child terminated normally with status: %d\n", ret);
+			break; // Exit proc mon loop
+		}
+		else if (WIFSIGNALED(status)) {
+			// Child terminated by a signal
+			// int sig = WTERMSIG(status);
+			// TODO ==> TO LOG : printf("Child terminated by signal: %d\n", sig);
+			break; // Exit proc mon loop
+		}
+		else if (WIFSTOPPED(status)) {
+			// Child received signal
 
-            // Do some logging here
+			int sig = WSTOPSIG(status);
+			if (sig == SIGTRAP) {
+				// TODO ==> TO LOG : printf("Child trapped, continuing...\n");
+				checked_call([=] { return ptrace(PTRACE_CONT, cpid, NULL, 0); },
+										 "Continuing after trap signal");
+			}
+			else {
+				// TODO ==> TO LOG : printf("Child received signal %d: ", sig);
+				if (is_signal_terminal(sig)) {
+					// TODO ==> TO LOG : printf("Terminating child\n", sig);
 
-            // Kill child and abandon it
-            res = ptrace(PTRACE_KILL, cpid, NULL, NULL);
-            test(res, "Killing child");
+					// Kill child and abandon it
+					checked_call([=] { return ptrace(PTRACE_KILL, cpid, NULL, NULL); },
+											 "Killing child");
 
-            ptrace(PTRACE_DETACH, cpid, NULL, NULL);
-            test(res, "Detaching from child");
+					checked_call([=] { return ptrace(PTRACE_DETACH, cpid, NULL, NULL); },
+											 "Detaching from child");
 
-            break; // Exit proc mon loop
-          }
+					break; // Exit proc mon loop
+				}
 
-          printf("Non-terminal, passing on to child\n", sig);
+				// TODO ==> TO LOG : printf("Non-terminal, passing on to child\n", sig);
 
-          // Some other signal, pass on to child
-          res = ptrace(PTRACE_CONT, cpid, NULL, sig);
-          test(res, "Passing on sig to child");
-        }
-      }
-    }
-  }
+				// Some other signal, pass on to child
+				checked_call([=] { return ptrace(PTRACE_CONT, cpid, NULL, sig); },
+										 "Passing on sig to child");
+			}
+		}
+	}
 
-  return 0;
+	// Logging process exit
+}
+
+char** alloc_args(const std::vector<std::string>& args) {
+	if (args.empty())
+		return { nullptr };
+
+	char** char_args;
+	char_args = new char*[args.size()];
+	for (size_t i = 0; i < args.size(); ++i)
+		char_args[i] = (char*) args[i].c_str();
+
+	return char_args;
+}
+
+bool is_signal_terminal(int sig) {
+	switch(sig) {
+	case SIGILL	 :
+	case SIGABRT :
+	case SIGFPE	 :
+	case SIGKILL :
+	case SIGSEGV :
+	case SIGPIPE :
+	case SIGBUS	 :
+	case SIGSYS	 :
+	case SIGXCPU :
+	case SIGXFSZ :
+		return true;
+	}
+	return false;
+}
+
+int checked_call(std::function<int(void)> f, const std::string& msg) {
+	int res = f();
+	test(res, msg);
+	return res;
+}
+
+void test(int result, const std::string& msg) {
+	if (result < 0) fail(msg);
+}
+
+void fail(const std::string& msg) {
+
+	if (errno) {
+		// ==> Do logging
+		throw harness_error(msg + " : " + strerror(errno));
+	}
+	else {
+		// ==> Do logging
+		throw harness_error(msg);
+	}
 }

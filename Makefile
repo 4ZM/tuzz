@@ -35,6 +35,7 @@ TUZZ_SRCS  =                       \
   slicer.cpp                       \
   magic_numbers.cpp                \
   position.cpp                     \
+  harness.cpp                      \
   slicers/all_slicer.cpp           \
   slicers/predicate_slicer.cpp     \
   slicers/delimiter_slicer.cpp     \
@@ -67,7 +68,7 @@ TEST_OBJS = $(TEST_OBJS1:.cpp=.o)
 
 .PHONY: clean all test run_tests
 
-all: tuzz test/test_runner targets harness
+all: tuzz test/test_runner targets 
 
 TARGET_BINS =                              \
   test/targets/local_overflow              \
@@ -115,8 +116,8 @@ targets/remote_overflow: test/targets/remote_overflow.cpp
 test/test_runner: ${TEST_OBJS} ${TUZZ_OBJS}
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
 
-harness: src/harness.cpp
-	gcc -o $@ $^ --std=c++11 -lstdc++
+#harness: src/harness.cpp
+#	gcc -o $@ $^ --std=c++11 -lstdc++
 
 # makedepend section - set up include dependencies
 DEPFILE		= .depends
