@@ -17,6 +17,7 @@
 
 GCC        = gcc
 CFLAGS     = -g -Wall -std=c++11 -I include
+CXXFLAGS   = ${CFLAGS}
 LDFLAGS    = -lstdc++                 \
              -lboost_filesystem       \
              -lboost_program_options  \
@@ -55,6 +56,7 @@ TEST_SRCS =                       \
   test_numbered_string.cpp        \
   test_output_target.cpp          \
   test_prng.cpp                   \
+  test_harness.cpp                \
   finjectors/test_insert_finjector.cpp      \
   finjectors/test_repeat_finjector.cpp      \
   finjectors/test_transform_finjector.cpp   \
@@ -71,12 +73,13 @@ TEST_OBJS = $(TEST_OBJS1:.cpp=.o)
 all: tuzz test/test_runner targets 
 
 TARGET_BINS =                              \
+  test/targets/exits                       \
   test/targets/local_overflow              \
   test/targets/remote_overflow
 
 targets: ${TARGET_BINS}
 
-test: test/test_runner
+test: test/test_runner test/targets/exits
 	./test/test_runner
 
 clean:
@@ -105,6 +108,9 @@ tuzz: src/tuzz.cpp ${TUZZ_OBJS}
 %.o : test/src/slicers/%.cpp Makefile
 	${GCC} ${CFLAGS_TEST} -c $<
 
+targets/exits: test/targets/exits.cpp
+	${GCC} ${CFLAGS} -o $@ $^ ${LDFLAGS}
+
 targets/local_overflow: test/targets/local_overflow.cpp
 	${GCC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
 
@@ -115,9 +121,6 @@ targets/remote_overflow: test/targets/remote_overflow.cpp
 # dependencies are hard to figure out automatically
 test/test_runner: ${TEST_OBJS} ${TUZZ_OBJS}
 	${GCC} -o $@ $^ ${CFLAGS_TEST} ${LDFLAGS_TEST}
-
-#harness: src/harness.cpp
-#	gcc -o $@ $^ --std=c++11 -lstdc++
 
 # makedepend section - set up include dependencies
 DEPFILE		= .depends

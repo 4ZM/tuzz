@@ -88,7 +88,7 @@ int start_server(int port) {
 void handle_client(int conn_fd, struct sockaddr_in* client_addr) {
     // This is where the bug is! 256 -> 128 unchecked
     char buff[128];
-    int recv_len = recv(conn_fd, &buff, 256, 0);
+    recv(conn_fd, &buff, 256, 0);
 
     send(conn_fd, "OK\n", 4, 0);
 }
