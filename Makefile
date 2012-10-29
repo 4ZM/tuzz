@@ -35,6 +35,7 @@ TUZZ_SRCS  =                       \
   chunk.cpp                        \
   slicer.cpp                       \
   magic_numbers.cpp                \
+  logger.cpp                       \
   position.cpp                     \
   harness.cpp                      \
   slicers/all_slicer.cpp           \
@@ -56,6 +57,7 @@ TEST_SRCS =                       \
   test_numbered_string.cpp        \
   test_output_target.cpp          \
   test_prng.cpp                   \
+  test_logger.cpp                 \
   test_harness.cpp                \
   finjectors/test_insert_finjector.cpp      \
   finjectors/test_repeat_finjector.cpp      \
