@@ -37,9 +37,8 @@ log_error::log_error(const char* msg)
   : tuzz_error(msg) { }
 
 
-logger::logger() : target_(nullptr) { }
-logger::logger(std::ostream& target) : target_(&target, [] (std::ostream*) { }) { }
-
+logger::logger() : target_(nullptr, [] (const std::ostream*) { }) { }
+logger::logger(std::ostream& target) : target_(&target, [] (const std::ostream*) { }) { }
 
 tuzz::logger& logger::get_logger() {
   return logger::instance_;
@@ -57,26 +56,31 @@ tuzz::logger& logger::set_logfile(const std::string& file_name) {
   return get_logger();
 }
 
-tuzz::logger& logger::set_output_target(std::ostream& target) {
-  flush();
-  target_.reset(&target, [] (std::ostream*) { });
+tuzz::logger& logger::reset_output_target() {
+  target_.reset();
   return *this;
 }
 
+tuzz::logger& logger::reset_output_target(std::ostream& target) {
+  target_.reset(&target);
+  return *this;
+}
 
-//const end_log tuzz::endl;
+tuzz::logger& logger::operator<<(const tuzz::end_log&)
+  {
+    if (is_logging())
+    {
+      // Process, then clear the buffer
+      log(buf_.str());
+      buf_.str(std::string());
+      target_->flush();
+    }
+    return *this;
+  }
+
+const end_log tuzz::lend;
 
 tuzz::logger& logger::log(const std::string& msg) const {
-  return this->log(msg, true);
-}
-
-tuzz::logger& logger::flush() const {
-  // if (target_)
-  //  (*target_) << std::endl;
-  return get_logger();
-}
-
-tuzz::logger& logger::log(const std::string& msg, bool nl) const {
   // Nop before the log file has been set up
   if (!target_)
     return get_logger();
@@ -89,18 +93,13 @@ tuzz::logger& logger::log(const std::string& msg, bool nl) const {
   //auto t = std::localtime(&tt);
   //(*target_) << now << "|" << msg << std::endl;
   //std::cout << sysclock::now();
-  (*target_) << "time goes here" << "|" << msg;
-  if (nl)
-    (*target_) << std::endl;
+  *target_ << "time goes here" << "|" << msg;
+  *target_ << std::endl;
   return get_logger();
 }
 
 void tuzz::set_logfile(const std::string& file_name) {
   logger::get_logger().set_logfile(file_name);
-}
-
-void tuzz::log(const std::string& msg) {
-  logger::get_logger().log(msg);
 }
 
 tuzz::logger tuzz::logger::instance_;

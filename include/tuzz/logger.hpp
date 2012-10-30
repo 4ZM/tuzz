@@ -26,6 +26,8 @@
 #include <memory>
 #include <sstream>
 
+#include <utility>
+
 namespace tuzz {
 
 // TODO: Possible logging features. Triage!
@@ -40,48 +42,74 @@ namespace tuzz {
 void set_logfile(const std::string& file_name);
 void log(const std::string& msg);
 
+struct end_log { };
+extern const end_log lend;
+
 struct logger {
 
   // It's ok to instantiate several loggers, but one global singleton
   // logger is provided for use in the convenience functions.
   // TODO: Evaluate - used DI everywhere?
-  logger(std::ostream& target);
-  static tuzz::logger& get_logger();
-  //  static void set_logger(ilogger&& new_logger);
+  explicit logger(std::ostream& target);
 
-  tuzz::logger& set_output_target(std::ostream& target);
+  // As soon as GCC implements move support for iostream base, add move semantics
+  //logger(tuzz::logger&&) noexcept = default;
+  //logger& operator=(tuzz::logger&&) noexcept = default;
+
+  ~logger() = default;
+
+  static tuzz::logger& get_logger();
+
+  // Change the output target
+  tuzz::logger& reset_output_target();
+  tuzz::logger& reset_output_target(std::ostream& target);
+
+  // True if there is a target set
+  bool is_logging();
+
+  // Convenience for setting up a file output target
   tuzz::logger& set_logfile(const std::string& file_name);
 
+  // Log a message
   tuzz::logger& log(const std::string& msg) const;
-  tuzz::logger& log(const std::string& msg, bool nl) const;
-  tuzz::logger& flush() const;
+
+  // Convenience functions for building log entries
+  template<typename T>
+  tuzz::logger& operator<<(T&& x);
+  tuzz::logger& operator<<(const tuzz::end_log&);
+
+  static const end_log endlog;
 
 private:
   static logger instance_;
   logger();
 
-  std::shared_ptr<std::ostream> target_;
+  std::stringstream buf_;
+  std::unique_ptr<std::ostream, void(*)(const std::ostream*)> target_;
 };
+
+
+template<typename T>
+tuzz::logger& logger::operator<<(T&& x)
+{
+  if (is_logging())
+    {
+      // Start accumulating the log text into the buffer
+      buf_ << x;
+    }
+  return *this;
+}
+
+inline bool logger::is_logging()
+{
+  return bool(target_);
+}
+
 
 struct log_error : public tuzz_error {
   log_error();
   log_error(const char* msg);
 };
-
-// struct end_log {};
-// extern const end_log endl;
-
-// template<typename T>
-// const tuzz::logger& operator<<(const tuzz::logger &l, T x)
-// {
-//  if (typeid(T) == typeid(end_log)) {
-//    logger::get_logger().flush();
-//  }
-
-//  std::stringstream ss;
-//  ss << x;
-//  return logger::get_logger().log(ss.str(), false);
-// }
 
 }
 
