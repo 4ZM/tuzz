@@ -57,6 +57,4 @@ TEST_CASE( "tuzz/logger/stream", "Test stream logging" ) {
   CHECK(log.find("str") != std::string::npos);
   CHECK(log.find("c s t r") != std::string::npos);
   CHECK(log.find("not in log") == std::string::npos);
-
 }
-

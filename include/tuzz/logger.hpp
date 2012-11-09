@@ -30,18 +30,6 @@
 
 namespace tuzz {
 
-// TODO: Possible logging features. Triage!
-//  Target: file, cout, cerr, (syslog, et al.)
-//  Verbosity - quiet, normal, (detailed?), debug
-//  Severity - Mostly for error logging. Include?
-//  Formating - Cout style, printf style?
-//  Impl. detail (line no, etc..)
-
-// Collection of free helper functions for interacting with the logger
-// singleton instance.
-void set_logfile(const std::string& file_name);
-void log(const std::string& msg);
-
 struct end_log { };
 extern const end_log lend;
 
@@ -49,7 +37,6 @@ struct logger {
 
   // It's ok to instantiate several loggers, but one global singleton
   // logger is provided for use in the convenience functions.
-  // TODO: Evaluate - used DI everywhere?
   explicit logger(std::ostream& target);
 
   // As soon as GCC implements move support for iostream base, add move semantics
@@ -78,8 +65,6 @@ struct logger {
   tuzz::logger& operator<<(T&& x);
   tuzz::logger& operator<<(const tuzz::end_log&);
 
-  static const end_log endlog;
-
 private:
   static logger instance_;
   logger();
@@ -88,15 +73,14 @@ private:
   std::unique_ptr<std::ostream, void(*)(const std::ostream*)> target_;
 };
 
-
 template<typename T>
 tuzz::logger& logger::operator<<(T&& x)
 {
   if (is_logging())
-    {
-      // Start accumulating the log text into the buffer
-      buf_ << x;
-    }
+  {
+    // Start accumulating the log text into the buffer
+    buf_ << x;
+  }
   return *this;
 }
 

@@ -78,28 +78,25 @@ tuzz::logger& logger::operator<<(const tuzz::end_log&)
     return *this;
   }
 
-const end_log tuzz::lend;
-
 tuzz::logger& logger::log(const std::string& msg) const {
   // Nop before the log file has been set up
   if (!target_)
     return get_logger();
 
-  using sysclock = std::chrono::system_clock;
+  char cstr[21]; // "YYYY-MM-DD HH:MM:SS"
+  std::time_t t = std::time(0);
+  std::strftime(cstr, sizeof(cstr), "%F %T", std::localtime(&t));
+  *target_ << cstr;
 
-  //std::chrono::time_point<std::chrono::system_clock> start, end;
-  //auto now = sysclock::now();a
-  //  auto tt = std::chrono::system_clock::to_time_t(now);
-  //auto t = std::localtime(&tt);
-  //(*target_) << now << "|" << msg << std::endl;
-  //std::cout << sysclock::now();
-  *target_ << "time goes here" << "|" << msg;
+  *target_ << "|";
+
+  *target_ << msg;
+
   *target_ << std::endl;
+
   return get_logger();
 }
 
-void tuzz::set_logfile(const std::string& file_name) {
-  logger::get_logger().set_logfile(file_name);
-}
+const end_log tuzz::lend;
 
 tuzz::logger tuzz::logger::instance_;
