@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-TEST_CASE( "tuzz/utility/options/noargs", "No aruments" ) {
+TEST_CASE( "tuzz/utility/options/noargs", "No arguments" ) {
   std::stringstream ss;
   const char* argv[] = { "prog_name", nullptr };
   REQUIRE_NOTHROW(tuzz::cmdline_options(1, argv, ss));
